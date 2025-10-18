@@ -12,3 +12,201 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ---------- Enums ----------
+enum UserStatus {
+  pending
+  active
+  archived
+}
+
+enum RepRole {
+  rep
+  rep_lead
+}
+
+enum RepStatus {
+  active
+  suspended
+}
+
+enum RegionLevel {
+  province
+  district
+  ward
+}
+
+enum AdminRole {
+  super_admin
+  coordinator
+}
+
+enum OpportunityLocationType {
+  remote
+  hybrid
+  onsite
+}
+
+enum OpportunityStatus {
+  open
+  closed
+}
+
+enum CaseStatus {
+  pending
+  in_progress
+  matched
+  rejected
+  done
+}
+
+enum NeedReportCreatedBy {
+  user
+  rep
+}
+
+enum NeedReportStatus {
+  open
+  reviewing
+  resolved
+}
+
+// ---------- Models ----------
+model User {
+  id             String          @id @default(uuid()) @db.Uuid
+  fullName       String          @db.VarChar(255)
+  gender         String?         @db.VarChar(20)
+  birthDate      DateTime?       @db.Date
+  disabilityType String          @db.VarChar(100)
+  skills         String[] // text[]
+  desiredJob     String?         @db.VarChar(255)
+  status         UserStatus      @default(pending)
+  // Region 1-n
+  regionId       String?         @db.Uuid
+  region         Region?         @relation(fields: [regionId], references: [id])
+  // Rep 1-n
+  repId          String?         @db.Uuid
+  representative Representative? @relation(fields: [repId], references: [id])
+  // Cases n-1
+  cases          Case[]
+  needReports    NeedReport[]
+  // Timestamp
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([regionId])
+  @@index([repId])
+  @@map("users")
+}
+
+model Representative {
+  id                  String       @id @default(uuid()) @db.Uuid
+  fullName            String       @db.VarChar(255)
+  email               String       @unique @db.VarChar(255)
+  phone               String?      @db.VarChar(20)
+  organization        String?      @db.VarChar(255)
+  role                RepRole      @default(rep)
+  status              RepStatus    @default(active)
+  // Region 1-n
+  regionScopeId       String?      @db.Uuid
+  regionScope         Region?      @relation(fields: [regionScopeId], references: [id])
+  // User phu trach: n-1
+  users               User[]
+  // Cases phu trach: n-1
+  assignedCases       Case[]
+  // Reports phu trach: n-1
+  needReportsAssigned NeedReport[]
+  // Timestamp
+  createdAt           DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([regionScopeId])
+  @@map("representatives")
+}
+
+model Region {
+  id       String           @id @default(uuid()) @db.Uuid
+  name     String           @db.VarChar(255)
+  level    RegionLevel
+  parentId String?          @db.Uuid
+  parent   Region?          @relation("RegionHierarchy", fields: [parentId], references: [id])
+  children Region[]         @relation("RegionHierarchy")
+  users    User[]
+  reps     Representative[]
+
+  @@index([parentId])
+  @@map("regions")
+}
+
+model Admin {
+  id        String    @id @default(uuid()) @db.Uuid
+  fullName  String    @db.VarChar(255)
+  email     String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  role      AdminRole @default(coordinator)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("admins")
+}
+
+model Opportunity {
+  id           String                  @id @default(uuid()) @db.Uuid
+  title        String                  @db.VarChar(255)
+  description  String?
+  requirements String?
+  locationType OpportunityLocationType @default(remote)
+  salaryRange  String?                 @db.VarChar(100)
+  source       String?                 @db.VarChar(255)
+  status       OpportunityStatus       @default(open)
+  // Cases: n-1
+  Cases        Case[]
+  // Timestamp
+  createdAt    DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@map("opportunities")
+}
+
+model Case {
+  id            String          @id @default(uuid()) @db.Uuid
+  userId        String          @db.Uuid
+  user          User            @relation(fields: [userId], references: [id])
+  status        CaseStatus      @default(pending)
+  notes         String?
+  // Opportunity: 1-n
+  opportunityId String          @db.Uuid
+  opportunity   Opportunity     @relation(fields: [opportunityId], references: [id])
+  // Rep: 1-n
+  assignedRepId String?         @db.Uuid
+  assignedRep   Representative? @relation(fields: [assignedRepId], references: [id])
+  // Timestamp
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([opportunityId])
+  @@index([assignedRepId])
+  @@map("cases")
+}
+
+model NeedReport {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @db.Uuid
+  user         User                @relation(fields: [userId], references: [id])
+  status       NeedReportStatus    @default(open)
+  // Nguoi tao
+  createdBy    NeedReportCreatedBy @default(user)
+  category     String              @db.VarChar(100)
+  description  String
+  attachments  String[] // text[] (URLs/paths)
+  // Nguoi xu ly
+  assignedToId String?             @db.Uuid
+  assignedTo   Representative?     @relation(fields: [assignedToId], references: [id])
+  // Timestamp
+  createdAt    DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime            @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([assignedToId])
+  @@map("need_reports")
+}
