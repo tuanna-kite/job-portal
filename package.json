@@ -6,22 +6,67 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ],
+    "*.{md,css,scss,json}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.33.7",
+    "@hono/zod-validator": "^0.7.4",
+    "@hookform/resolvers": "^5.2.2",
+    "@prisma/client": "^6.17.1",
+    "@tanstack/react-query": "^5.90.5",
+    "@uploadthing/react": "^7.3.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "hono": "^4.10.1",
+    "lucide-react": "^0.546.0",
+    "next": "15.5.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.6"
+    "react-hook-form": "^7.65.0",
+    "tailwind-merge": "^3.3.1",
+    "uploadthing": "^7.7.4",
+    "zod": "^4.1.12",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@next/eslint-plugin-next": "^15.5.6",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^9.38.0",
     "eslint-config-next": "15.5.6",
-    "@eslint/eslintrc": "^3"
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-unused-imports": "^4.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "prisma": "^6.17.1",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.6",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "^5"
   }
 }

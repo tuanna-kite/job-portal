@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+echo "🧪 Typecheck…"
+npm run typecheck || exit 1
+echo "✅ Pre-push passed."

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+echo "🔍 Running lint-staged…"
+npx lint-staged || exit 1
+echo "✅ Pre-commit passed."
