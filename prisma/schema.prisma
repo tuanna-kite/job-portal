@@ -34,6 +34,7 @@ enum RegionLevel {
   province
   district
   ward
+  municipality
 }
 
 enum AdminRole {
@@ -110,6 +111,9 @@ model Representative {
   // Region 1-n
   regionScopeId       String?      @db.Uuid
   regionScope         Region?      @relation(fields: [regionScopeId], references: [id])
+  // Admin Coordinate
+  accountId           String?      @db.Uuid @unique
+  account             Admin?       @relation(fields: [accountId], references: [id])
   // User phu trach: n-1
   users               User[]
   // Cases phu trach: n-1
@@ -121,6 +125,7 @@ model Representative {
   updatedAt           DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
 
   @@index([regionScopeId])
+  @@index([accountId])
   @@map("representatives")
 }
 
@@ -139,12 +144,13 @@ model Region {
 }
 
 model Admin {
-  id        String    @id @default(uuid()) @db.Uuid
-  fullName  String    @db.VarChar(255)
-  email     String    @unique @db.VarChar(255)
-  password  String    @db.VarChar(255)
-  role      AdminRole @default(coordinator)
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  id         String          @id @default(uuid()) @db.Uuid
+  fullName   String          @db.VarChar(255)
+  email      String          @unique @db.VarChar(255)
+  password   String          @db.VarChar(255)
+  role       AdminRole       @default(coordinator)
+  createdAt  DateTime        @default(now()) @db.Timestamptz(6)
+  repProfile Representative?
 
   @@map("admins")
 }
@@ -159,7 +165,7 @@ model Opportunity {
   source       String?                 @db.VarChar(255)
   status       OpportunityStatus       @default(open)
   // Cases: n-1
-  Cases        Case[]
+  cases        Case[]
   // Timestamp
   createdAt    DateTime                @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime                @default(now()) @updatedAt @db.Timestamptz(6)

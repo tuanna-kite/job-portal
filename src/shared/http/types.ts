@@ -22,5 +22,5 @@ export type ErrorBody = {
   code: string; // e.g. EMAIL_ALREADY_EXISTS
   message: string; // human message (i18n-friendly)
   errors?: FieldError[]; // optional field errors
-  statusCode: number | string;
+  statusCode: number;
 };
