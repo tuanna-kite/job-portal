@@ -8,9 +8,9 @@ import { HttpExceptionBuilder } from "@/backend/http/http-exception-builder";
 import { ResponseBuilder } from "@/backend/http/response-builder";
 import { RequestValidation } from "@/backend/http/validations/request-validation";
 import { authMiddleware } from "@/backend/middlewares/auth.middleware";
-import { LoginDtoSchema } from "@/shared/validation/auth/loginDtoSchema";
+import { LoginDtoSchema } from "@/shared/validation/auth/login-dto.schema";
 
-import type { LoginDto } from "@/shared/validation/auth/loginDtoSchema";
+import type { LoginDto } from "@/shared/validation/auth/login-dto.schema";
 
 const AuthRoute = new Hono().basePath("/api/auth");
 
