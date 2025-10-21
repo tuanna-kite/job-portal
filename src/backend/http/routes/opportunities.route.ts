@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { RequestValidation } from "@/backend/http/validations/request-validation";
 import { CreateOpportunitySchema } from "@/shared/validation/opportunities/create-opportunity.schema";
 
-const OpportunitiesRoute = new Hono().basePath("/api/opportunities");
+export const OpportunitiesRoute = new Hono().basePath("/api/opportunities");
 
 OpportunitiesRoute.post(
   "/",
