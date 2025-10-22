@@ -20,6 +20,7 @@ CasesRoute.post(
   async (ctx) => {
     const dto = await ctx.req.json<CreateCaseDto>();
     const admin = ctx.get("admin");
+    const admin2 = 2;
 
     const user = await prisma.user.findUnique({
       where: { id: dto.userId },
