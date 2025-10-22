@@ -17,7 +17,7 @@ export const CreateOpportunitySchema = z.object({
   salaryRange: z.string().optional(),
   source: z.string().optional(),
   status: z
-    .enum([OpportunityStatus.OPEN, OpportunityStatus.CLOSE])
+    .enum([OpportunityStatus.OPEN, OpportunityStatus.CLOSED])
     .default(OpportunityStatus.OPEN),
 });
 
