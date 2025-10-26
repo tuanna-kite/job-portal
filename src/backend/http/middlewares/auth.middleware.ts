@@ -2,18 +2,11 @@ import { getCookie } from "hono/cookie";
 
 import { prisma } from "@/backend/db";
 import { JwtHelper } from "@/backend/helpers/jwt.helper";
-import { HttpExceptionBuilder } from "@/backend/http/http-exception-builder";
+import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-builder";
 
-import type { Admin } from "@prisma/client";
 import type { MiddlewareHandler } from "hono";
 
-type AppEnv = {
-  Variables: {
-    admin: Omit<Admin, "password">;
-  };
-};
-
-export const authMiddleware: MiddlewareHandler<AppEnv> = async (ctx, next) => {
+export const authMiddleware: MiddlewareHandler = async (ctx, next) => {
   const token = getCookie(ctx, "accessToken");
   const exception = HttpExceptionBuilder.unauthorized();
   if (!token) {

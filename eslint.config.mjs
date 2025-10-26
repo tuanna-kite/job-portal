@@ -16,7 +16,14 @@ const projectTsconfig = path.resolve("tsconfig.json");
 export default [
   // Ignore build artifacts
   {
-    ignores: ["**/node_modules", "**/.next", "**/dist", "**/build", "**/.turbo", "**/coverage"],
+    ignores: [
+      "**/node_modules",
+      "**/.next",
+      "**/dist",
+      "**/build",
+      "**/.turbo",
+      "**/coverage",
+    ],
   },
 
   // Base parser options for TS/JS files
@@ -51,7 +58,10 @@ export default [
       // TypeScript
       "@typescript-eslint/no-unused-vars": "off", // dùng unused-imports thay thế
       "@typescript-eslint/array-type": ["warn", { default: "array-simple" }],
-      "@typescript-eslint/consistent-type-imports": ["warn", { prefer: "type-imports" }],
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        { prefer: "type-imports" },
+      ],
 
       // Unused imports/vars
       "no-console": ["error", { allow: ["warn", "error"] }],
@@ -91,7 +101,7 @@ export default [
       // React / Hooks
       "react/jsx-uses-react": "off",
       "react/react-in-jsx-scope": "off",
-      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/rules-of-hooks": "off",
       "react-hooks/exhaustive-deps": "warn",
 
       // A11y

@@ -1,78 +1,70 @@
 import { Hono } from "hono";
 
 import { prisma } from "@/backend/db";
-import { HttpExceptionBuilder } from "@/backend/http/http-exception-builder";
-import { ResponseBuilder } from "@/backend/http/response-builder";
-import { RequestValidation } from "@/backend/http/validations/request-validation";
-import { authMiddleware } from "@/backend/middlewares/auth.middleware";
-import { CreateCaseSchema } from "@/shared/validation/cases/create-case.schema";
-import { UpdateCaseSchema } from "@/shared/validation/cases/update-case.schema";
+import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-builder";
+import { ResponseBuilder } from "@/backend/http/builder/response-builder";
+import { authMiddleware } from "@/backend/http/middlewares/auth.middleware";
 
 import type { CreateCaseDto } from "@/shared/validation/cases/create-case.schema";
 import type { UpdateCaseDto } from "@/shared/validation/cases/update-case.schema";
 
-const CasesRoute = new Hono().basePath("/api/cases");
+const CasesRoute = new Hono();
 
-CasesRoute.post(
-  "/",
-  RequestValidation.json(CreateCaseSchema),
-  authMiddleware,
-  async (ctx) => {
-    const dto = await ctx.req.json<CreateCaseDto>();
-    const admin = ctx.get("admin");
+CasesRoute.post("/", authMiddleware, async (ctx) => {
+  const dto = await ctx.req.json<CreateCaseDto>();
 
-    const user = await prisma.user.findUnique({
-      where: { id: dto.userId },
+  const user = await prisma.user.findUnique({
+    where: { id: dto.userId },
+  });
+
+  if (!user) {
+    const exception = HttpExceptionBuilder.notFound("User not found");
+    return ctx.json(exception, 404);
+  }
+
+  const opportunity = await prisma.opportunity.findUnique({
+    where: { id: dto.opportunityId },
+  });
+
+  if (!opportunity) {
+    const exception = HttpExceptionBuilder.notFound("Opportunity not found");
+    return ctx.json(exception, 404);
+  }
+
+  if (dto.assignedRepId) {
+    const rep = await prisma.representative.findUnique({
+      where: { id: dto.assignedRepId },
     });
 
-    if (!user) {
-      const exception = HttpExceptionBuilder.notFound("User not found");
+    if (!rep) {
+      const exception = HttpExceptionBuilder.notFound(
+        "Representative not found",
+      );
       return ctx.json(exception, 404);
     }
+  }
 
-    const opportunity = await prisma.opportunity.findUnique({
-      where: { id: dto.opportunityId },
-    });
+  const case_ = await prisma.case.create({
+    data: {
+      userId: dto.userId,
+      opportunityId: dto.opportunityId,
+      assignedRepId: dto.assignedRepId,
+      status: dto.status,
+      notes: dto.notes,
+    },
+    include: {
+      user: true,
+      opportunity: true,
+      assignedRep: true,
+    },
+  });
 
-    if (!opportunity) {
-      const exception = HttpExceptionBuilder.notFound("Opportunity not found");
-      return ctx.json(exception, 404);
-    }
-
-    if (dto.assignedRepId) {
-      const rep = await prisma.representative.findUnique({
-        where: { id: dto.assignedRepId },
-      });
-
-      if (!rep) {
-        const exception = HttpExceptionBuilder.notFound("Representative not found");
-        return ctx.json(exception, 404);
-      }
-    }
-
-    const case_ = await prisma.case.create({
-      data: {
-        userId: dto.userId,
-        opportunityId: dto.opportunityId,
-        assignedRepId: dto.assignedRepId,
-        status: dto.status,
-        notes: dto.notes,
-      },
-      include: {
-        user: true,
-        opportunity: true,
-        assignedRep: true,
-      },
-    });
-
-    return ctx.json(ResponseBuilder.ok(case_));
-  },
-);
+  return ctx.json(ResponseBuilder.ok(case_));
+});
 
 CasesRoute.get("/", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const { searchParams } = new URL(ctx.req.url);
-  
+
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
   const userId = searchParams.get("userId");
@@ -119,59 +111,54 @@ CasesRoute.get("/", authMiddleware, async (ctx) => {
   );
 });
 
-CasesRoute.patch(
-  "/:id",
-  RequestValidation.json(UpdateCaseSchema),
-  authMiddleware,
-  async (ctx) => {
-    const admin = ctx.get("admin");
-    const id = ctx.req.param("id");
-    const dto = await ctx.req.json<UpdateCaseDto>();
+CasesRoute.patch("/:id", authMiddleware, async (ctx) => {
+  const id = ctx.req.param("id");
+  const dto = await ctx.req.json<UpdateCaseDto>();
 
-    const existingCase = await prisma.case.findUnique({
-      where: { id },
+  const existingCase = await prisma.case.findUnique({
+    where: { id },
+  });
+
+  if (!existingCase) {
+    const exception = HttpExceptionBuilder.notFound("Case not found");
+    return ctx.json(exception, 404);
+  }
+
+  if (dto.assignedRepId) {
+    const rep = await prisma.representative.findUnique({
+      where: { id: dto.assignedRepId },
     });
 
-    if (!existingCase) {
-      const exception = HttpExceptionBuilder.notFound("Case not found");
+    if (!rep) {
+      const exception = HttpExceptionBuilder.notFound(
+        "Representative not found",
+      );
       return ctx.json(exception, 404);
     }
+  }
 
-    if (dto.assignedRepId) {
-      const rep = await prisma.representative.findUnique({
-        where: { id: dto.assignedRepId },
-      });
-
-      if (!rep) {
-        const exception = HttpExceptionBuilder.notFound("Representative not found");
-        return ctx.json(exception, 404);
-      }
-    }
-
-    const case_ = await prisma.case.update({
-      where: { id },
-      data: {
-        assignedRepId: dto.assignedRepId,
-        status: dto.status,
-        notes: dto.notes,
-      },
-      include: {
-        user: {
-          include: {
-            region: true,
-          },
+  const case_ = await prisma.case.update({
+    where: { id },
+    data: {
+      assignedRepId: dto.assignedRepId,
+      status: dto.status,
+      notes: dto.notes,
+    },
+    include: {
+      user: {
+        include: {
+          region: true,
         },
-        opportunity: true,
-        assignedRep: true,
       },
-    });
+      opportunity: true,
+      assignedRep: true,
+    },
+  });
 
-    return ctx.json(ResponseBuilder.ok(case_));
-  },
-);
+  return ctx.json(ResponseBuilder.ok(case_));
+});
 
 CasesRoute.get("/:id/timeline", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const id = ctx.req.param("id");
 
   const case_ = await prisma.case.findUnique({

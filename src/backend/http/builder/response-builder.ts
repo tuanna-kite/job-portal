@@ -1,10 +1,7 @@
 import { ResponseStatus } from "@/shared/http/status";
 
 import type { Pagination } from "@/shared/http/pagination";
-import type {
-  SuccessPaginated,
-  Success,
-} from "@/shared/http/types";
+import type { SuccessPaginated, Success } from "@/shared/http/types";
 
 export class ResponseBuilder {
   // ==== SUCCESS ====

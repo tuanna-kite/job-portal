@@ -1,11 +1,7 @@
-import type { FieldError } from "@/shared/http/types";
-import type { ZodError } from "zod";
+import { z } from "@hono/zod-openapi";
 
-export function toFieldErrors(error: ZodError): FieldError[] {
-  return error.issues.map((i) => {
-    return {
-      field: i.path.join("."),
-      message: i.message,
-    };
+export const successDto = <T extends z.ZodTypeAny>(schema: T) =>
+  z.object({
+    status: z.literal("success"),
+    data: schema,
   });
-}

@@ -1,73 +1,65 @@
 import { Hono } from "hono";
 
 import { prisma } from "@/backend/db";
-import { HttpExceptionBuilder } from "@/backend/http/http-exception-builder";
-import { ResponseBuilder } from "@/backend/http/response-builder";
-import { RequestValidation } from "@/backend/http/validations/request-validation";
-import { authMiddleware } from "@/backend/middlewares/auth.middleware";
-import { CreateReportSchema } from "@/shared/validation/reports/create-report.schema";
-import { UpdateReportSchema } from "@/shared/validation/reports/update-report.schema";
+import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-builder";
+import { ResponseBuilder } from "@/backend/http/builder/response-builder";
+import { authMiddleware } from "@/backend/http/middlewares/auth.middleware";
 
 import type { CreateReportDto } from "@/shared/validation/reports/create-report.schema";
 import type { UpdateReportDto } from "@/shared/validation/reports/update-report.schema";
 
-const ReportsRoute = new Hono().basePath("/api/reports");
+const ReportsRoute = new Hono();
 
-ReportsRoute.post(
-  "/",
-  RequestValidation.json(CreateReportSchema),
-  authMiddleware,
-  async (ctx) => {
-    const dto = await ctx.req.json<CreateReportDto>();
-    const admin = ctx.get("admin");
+ReportsRoute.post("/", authMiddleware, async (ctx) => {
+  const dto = await ctx.req.json<CreateReportDto>();
 
-    const user = await prisma.user.findUnique({
-      where: { id: dto.userId },
+  const user = await prisma.user.findUnique({
+    where: { id: dto.userId },
+  });
+
+  if (!user) {
+    const exception = HttpExceptionBuilder.notFound("User not found");
+    return ctx.json(exception, 404);
+  }
+
+  if (dto.assignedToId) {
+    const rep = await prisma.representative.findUnique({
+      where: { id: dto.assignedToId },
     });
 
-    if (!user) {
-      const exception = HttpExceptionBuilder.notFound("User not found");
+    if (!rep) {
+      const exception = HttpExceptionBuilder.notFound(
+        "Representative not found",
+      );
       return ctx.json(exception, 404);
     }
+  }
 
-    if (dto.assignedToId) {
-      const rep = await prisma.representative.findUnique({
-        where: { id: dto.assignedToId },
-      });
-
-      if (!rep) {
-        const exception = HttpExceptionBuilder.notFound("Representative not found");
-        return ctx.json(exception, 404);
-      }
-    }
-
-    const report = await prisma.needReport.create({
-      data: {
-        userId: dto.userId,
-        createdBy: dto.createdBy,
-        category: dto.category,
-        description: dto.description,
-        attachments: dto.attachments || [],
-        assignedToId: dto.assignedToId,
-      },
-      include: {
-        user: {
-          include: {
-            region: true,
-          },
+  const report = await prisma.needReport.create({
+    data: {
+      userId: dto.userId,
+      createdBy: dto.createdBy,
+      category: dto.category,
+      description: dto.description,
+      attachments: dto.attachments || [],
+      assignedToId: dto.assignedToId,
+    },
+    include: {
+      user: {
+        include: {
+          region: true,
         },
-        assignedTo: true,
       },
-    });
+      assignedTo: true,
+    },
+  });
 
-    return ctx.json(ResponseBuilder.ok(report));
-  },
-);
+  return ctx.json(ResponseBuilder.ok(report));
+});
 
 ReportsRoute.get("/", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const { searchParams } = new URL(ctx.req.url);
-  
+
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
   const userId = searchParams.get("userId");
@@ -116,7 +108,6 @@ ReportsRoute.get("/", authMiddleware, async (ctx) => {
 });
 
 ReportsRoute.get("/:id", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const id = ctx.req.param("id");
 
   const report = await prisma.needReport.findUnique({
@@ -139,59 +130,54 @@ ReportsRoute.get("/:id", authMiddleware, async (ctx) => {
   return ctx.json(ResponseBuilder.ok(report));
 });
 
-ReportsRoute.patch(
-  "/:id",
-  RequestValidation.json(UpdateReportSchema),
-  authMiddleware,
-  async (ctx) => {
-    const admin = ctx.get("admin");
-    const id = ctx.req.param("id");
-    const dto = await ctx.req.json<UpdateReportDto>();
+ReportsRoute.patch("/:id", authMiddleware, async (ctx) => {
+  const id = ctx.req.param("id");
+  const dto = await ctx.req.json<UpdateReportDto>();
 
-    const existingReport = await prisma.needReport.findUnique({
-      where: { id },
+  const existingReport = await prisma.needReport.findUnique({
+    where: { id },
+  });
+
+  if (!existingReport) {
+    const exception = HttpExceptionBuilder.notFound("Report not found");
+    return ctx.json(exception, 404);
+  }
+
+  if (dto.assignedToId) {
+    const rep = await prisma.representative.findUnique({
+      where: { id: dto.assignedToId },
     });
 
-    if (!existingReport) {
-      const exception = HttpExceptionBuilder.notFound("Report not found");
+    if (!rep) {
+      const exception = HttpExceptionBuilder.notFound(
+        "Representative not found",
+      );
       return ctx.json(exception, 404);
     }
+  }
 
-    if (dto.assignedToId) {
-      const rep = await prisma.representative.findUnique({
-        where: { id: dto.assignedToId },
-      });
-
-      if (!rep) {
-        const exception = HttpExceptionBuilder.notFound("Representative not found");
-        return ctx.json(exception, 404);
-      }
-    }
-
-    const report = await prisma.needReport.update({
-      where: { id },
-      data: {
-        assignedToId: dto.assignedToId,
-        status: dto.status,
-        description: dto.description,
-        attachments: dto.attachments,
-      },
-      include: {
-        user: {
-          include: {
-            region: true,
-          },
+  const report = await prisma.needReport.update({
+    where: { id },
+    data: {
+      assignedToId: dto.assignedToId,
+      status: dto.status,
+      description: dto.description,
+      attachments: dto.attachments,
+    },
+    include: {
+      user: {
+        include: {
+          region: true,
         },
-        assignedTo: true,
       },
-    });
+      assignedTo: true,
+    },
+  });
 
-    return ctx.json(ResponseBuilder.ok(report));
-  },
-);
+  return ctx.json(ResponseBuilder.ok(report));
+});
 
 ReportsRoute.delete("/:id", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const id = ctx.req.param("id");
 
   const existingReport = await prisma.needReport.findUnique({

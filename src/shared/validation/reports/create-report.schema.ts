@@ -4,7 +4,9 @@ import { NeedReportCreatedBy } from "@/shared/domains/reports/need-report-create
 
 export const CreateReportSchema = z.object({
   userId: z.string().uuid(),
-  createdBy: z.nativeEnum(NeedReportCreatedBy).default(NeedReportCreatedBy.USER),
+  createdBy: z
+    .nativeEnum(NeedReportCreatedBy)
+    .default(NeedReportCreatedBy.USER),
   category: z.string().min(1),
   description: z.string().min(1),
   attachments: z.array(z.string()).optional(),

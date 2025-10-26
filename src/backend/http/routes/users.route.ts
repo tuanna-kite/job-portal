@@ -1,48 +1,38 @@
 import { Hono } from "hono";
 
 import { prisma } from "@/backend/db";
-import { HttpExceptionBuilder } from "@/backend/http/http-exception-builder";
-import { ResponseBuilder } from "@/backend/http/response-builder";
-import { RequestValidation } from "@/backend/http/validations/request-validation";
-import { authMiddleware } from "@/backend/middlewares/auth.middleware";
-import { CreateUserSchema } from "@/shared/validation/users/create-user.schema";
-import { UpdateUserSchema } from "@/shared/validation/users/update-user.schema";
+import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-builder";
+import { ResponseBuilder } from "@/backend/http/builder/response-builder";
+import { authMiddleware } from "@/backend/http/middlewares/auth.middleware";
 
 import type { CreateUserDto } from "@/shared/validation/users/create-user.schema";
 import type { UpdateUserDto } from "@/shared/validation/users/update-user.schema";
 
-const UsersRoute = new Hono().basePath("/api/users");
+const UsersRoute = new Hono();
 
-UsersRoute.post(
-  "/",
-  RequestValidation.json(CreateUserSchema),
-  authMiddleware,
-  async (ctx) => {
-    const dto = await ctx.req.json<CreateUserDto>();
-    const admin = ctx.get("admin");
+UsersRoute.post("/", authMiddleware, async (ctx) => {
+  const dto = await ctx.req.json<CreateUserDto>();
 
-    const user = await prisma.user.create({
-      data: {
-        fullName: dto.fullName,
-        gender: dto.gender,
-        birthDate: dto.birthDate ? new Date(dto.birthDate) : null,
-        disabilityType: dto.disabilityType,
-        skills: dto.skills || [],
-        desiredJob: dto.desiredJob,
-        regionId: dto.regionId,
-        repId: dto.repId,
-        status: dto.status,
-      },
-    });
+  const user = await prisma.user.create({
+    data: {
+      fullName: dto.fullName,
+      gender: dto.gender,
+      birthDate: dto.birthDate ? new Date(dto.birthDate) : null,
+      disabilityType: dto.disabilityType,
+      skills: dto.skills || [],
+      desiredJob: dto.desiredJob,
+      regionId: dto.regionId,
+      repId: dto.repId,
+      status: dto.status,
+    },
+  });
 
-    return ctx.json(ResponseBuilder.ok(user));
-  },
-);
+  return ctx.json(ResponseBuilder.ok(user));
+});
 
 UsersRoute.get("/", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const { searchParams } = new URL(ctx.req.url);
-  
+
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
   const regionId = searchParams.get("regionId");
@@ -91,7 +81,6 @@ UsersRoute.get("/", authMiddleware, async (ctx) => {
 });
 
 UsersRoute.get("/:id", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const id = ctx.req.param("id");
 
   const user = await prisma.user.findUnique({
@@ -117,49 +106,42 @@ UsersRoute.get("/:id", authMiddleware, async (ctx) => {
   return ctx.json(ResponseBuilder.ok(user));
 });
 
-UsersRoute.patch(
-  "/:id",
-  RequestValidation.json(UpdateUserSchema),
-  authMiddleware,
-  async (ctx) => {
-    const admin = ctx.get("admin");
-    const id = ctx.req.param("id");
-    const dto = await ctx.req.json<UpdateUserDto>();
+UsersRoute.patch("/:id", authMiddleware, async (ctx) => {
+  const id = ctx.req.param("id");
+  const dto = await ctx.req.json<UpdateUserDto>();
 
-    const existingUser = await prisma.user.findUnique({
-      where: { id },
-    });
+  const existingUser = await prisma.user.findUnique({
+    where: { id },
+  });
 
-    if (!existingUser) {
-      const exception = HttpExceptionBuilder.notFound("User not found");
-      return ctx.json(exception, 404);
-    }
+  if (!existingUser) {
+    const exception = HttpExceptionBuilder.notFound("User not found");
+    return ctx.json(exception, 404);
+  }
 
-    const user = await prisma.user.update({
-      where: { id },
-      data: {
-        fullName: dto.fullName,
-        gender: dto.gender,
-        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-        disabilityType: dto.disabilityType,
-        skills: dto.skills,
-        desiredJob: dto.desiredJob,
-        regionId: dto.regionId,
-        repId: dto.repId,
-        status: dto.status,
-      },
-      include: {
-        region: true,
-        representative: true,
-      },
-    });
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      fullName: dto.fullName,
+      gender: dto.gender,
+      birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+      disabilityType: dto.disabilityType,
+      skills: dto.skills,
+      desiredJob: dto.desiredJob,
+      regionId: dto.regionId,
+      repId: dto.repId,
+      status: dto.status,
+    },
+    include: {
+      region: true,
+      representative: true,
+    },
+  });
 
-    return ctx.json(ResponseBuilder.ok(user));
-  },
-);
+  return ctx.json(ResponseBuilder.ok(user));
+});
 
 UsersRoute.delete("/:id", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const id = ctx.req.param("id");
 
   const existingUser = await prisma.user.findUnique({
@@ -180,7 +162,6 @@ UsersRoute.delete("/:id", authMiddleware, async (ctx) => {
 });
 
 UsersRoute.get("/:id/cases", authMiddleware, async (ctx) => {
-  const admin = ctx.get("admin");
   const id = ctx.req.param("id");
 
   const user = await prisma.user.findUnique({
