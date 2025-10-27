@@ -1,6 +1,6 @@
 import { prisma } from "@/backend/db";
 
-import type { PrismaTx } from "@/backend/repositories/type";
+import type { PrismaTx } from "@/backend/types/type";
 
 export class RepsRepository {
   constructor(private db: PrismaTx = prisma) {}

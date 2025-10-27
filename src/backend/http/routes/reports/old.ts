@@ -5,13 +5,13 @@ import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-buil
 import { ResponseBuilder } from "@/backend/http/builder/response-builder";
 import { authMiddleware } from "@/backend/http/middlewares/auth.middleware";
 
-import type { CreateReportDto } from "@/shared/validation/reports/create-report.schema";
+import type { CreateReportByUserDto } from "@/shared/validation/reports/create-report-by-user.schema";
 import type { UpdateReportDto } from "@/shared/validation/reports/update-report.schema";
 
 const ReportsRoute = new Hono();
 
 ReportsRoute.post("/", authMiddleware, async (ctx) => {
-  const dto = await ctx.req.json<CreateReportDto>();
+  const dto = await ctx.req.json<CreateReportByUserDto>();
 
   const user = await prisma.user.findUnique({
     where: { id: dto.userId },
