@@ -19,12 +19,12 @@ const Header = () => {
   const navigationItems = [
     { href: ERouteTable.ROOT, label: "Trang chủ" },
     { href: ERouteTable.ABOUT_US, label: "Giới thiệu" },
-    { href: ERouteTable.EXPLORE, label: "Liên hệ" },
-    { href: ERouteTable.SURVEY, label: "Tra cứu hồ sơ" },
+    { href: ERouteTable.CONTACT, label: "Liên hệ" },
+    { href: ERouteTable.SEARCH_CONTRACT, label: "Tra cứu hồ sơ" },
   ];
 
   useEffect(() => {
-    router.prefetch("/explore");
+    router.prefetch("/contact");
   }, [router]);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const Header = () => {
       }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex h-19 items-center md:justify-evenly justify-between">
+        <div className="flex h-19 items-center justify-between md:justify-evenly">
           <Link
             href={ERouteTable.ROOT}
             className="flex items-center"
@@ -101,24 +101,22 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
-
           </nav>
-          <div className="md:flex flex-col justify-center gap-4 md:flex-row hidden">
+          <div className="hidden flex-col justify-center gap-4 md:flex md:flex-row">
             <Button
               variant="default"
-              className="mx-auto w-fit rounded-lg border border-white bg-transparent px-6 py-3 md:mx-0"
-              onClick={() => router.push(ERouteTable.EXPLORE)}
+              className={`${scrolled ? "text-primary border-gray-900/25" : "border-white"} mx-auto w-fit rounded-lg border bg-transparent px-6 py-3 md:mx-0`}
+              onClick={() => router.push(ERouteTable.SIGIN_IN)}
             >
               Đăng nhập
             </Button>
             <Button
               className="bg-primary-main mx-auto w-fit rounded-lg px-6 py-3 md:mx-0"
-              onClick={() => router.push(ERouteTable.SURVEY)}
+              onClick={() => router.push(ERouteTable.CONNECT)}
             >
               Nhận hỗ trợ
             </Button>
           </div>
-
 
           <div className="md:hidden">
             <button
@@ -183,14 +181,14 @@ const Header = () => {
         <div className="mt-4 px-4">
           <Button
             variant="default"
-            className="mx-auto w-full rounded-lg border border-gray-900/25 text-primary bg-transparent px-6 py-3 md:mx-0"
-            onClick={() => router.push(ERouteTable.EXPLORE)}
+            className="text-primary mx-auto w-full rounded-lg border border-gray-900/25 bg-transparent px-6 py-3 md:mx-0"
+            onClick={() => router.push(ERouteTable.SIGIN_IN)}
           >
             Đăng nhập
           </Button>
           <Button
-            className="bg-primary-main mt-2 mx-auto w-full rounded-lg px-6 py-3 md:mx-0"
-            onClick={() => router.push(ERouteTable.SURVEY)}
+            className="bg-primary-main mx-auto mt-2 w-full rounded-lg px-6 py-3 md:mx-0"
+            onClick={() => router.push(ERouteTable.CONNECT)}
           >
             Nhận hỗ trợ
           </Button>

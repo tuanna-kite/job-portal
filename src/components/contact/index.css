@@ -1,0 +1,28 @@
+.contact-selection {
+  position: relative;
+  background-image: url("/images/background/banner-contact.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100%;
+  color: white; /* Đổi toàn bộ chữ thành trắng */
+  overflow: hidden; /* Giới hạn overlay không tràn ra ngoài */
+}
+
+/* Overlay nền đen chỉ phủ trong vùng home-selection */
+.contact-selection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* Giới hạn overlay trong vùng cha */
+  background-color: rgba(0, 0, 0, 0.6); /* Độ mờ của nền đen */
+  z-index: 0;
+}
+
+/* Đảm bảo nội dung nằm trên overlay */
+.contact-selection > * {
+  position: relative;
+  z-index: 1;
+}
