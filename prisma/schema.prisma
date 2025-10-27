@@ -20,9 +20,27 @@ enum UserStatus {
   archived
 }
 
+enum DisabilityType {
+  VISION_IMPAIRMENT // Khiếm thị / Mù / Thị lực yếu
+  HEARING_IMPAIRMENT // Khiếm thính / Điếc
+  SPEECH_IMPAIRMENT // Khó nói / Không nói được
+  PHYSICAL_DISABILITY // Vận động (liệt, mất chi, yếu cơ, bại não,...)
+  INTELLECTUAL_DISABILITY // Khuyết tật trí tuệ
+  MENTAL_DISABILITY // Rối loạn tâm thần, trầm cảm nặng, rối loạn lo âu, v.v.
+  AUTISM_SPECTRUM // Rối loạn phổ tự kỷ
+  LEARNING_DISABILITY // Khó khăn trong học tập (dyslexia, ADHD, v.v.)
+  MULTIPLE_DISABILITIES // Đa khuyết tật (kết hợp nhiều dạng)
+  OTHER // Khác (ghi rõ mô tả)
+}
+
 enum RepRole {
   rep
   rep_lead
+}
+
+enum Gender {
+  male
+  female
 }
 
 enum RepStatus {
@@ -66,6 +84,22 @@ enum NeedReportCreatedBy {
   rep
 }
 
+enum NeedSupportCategory {
+  JOB_SEEKING // Tìm việc làm
+  TRAINING_EDUCATION // Hỗ trợ đào tạo / giáo dục nghề
+  ASSISTIVE_DEVICES // Hỗ trợ thiết bị (xe lăn, máy trợ thính,...)
+  FINANCIAL_ASSISTANCE // Hỗ trợ tài chính / trợ cấp
+  HEALTHCARE_SUPPORT // Hỗ trợ y tế / phục hồi chức năng
+  HOUSING_SUPPORT // Hỗ trợ chỗ ở / cải thiện nơi ở
+  TRANSPORTATION_SUPPORT // Hỗ trợ di chuyển (phương tiện, vé xe,...)
+  LEGAL_SUPPORT // Hỗ trợ pháp lý, giấy tờ
+  SOCIAL_INCLUSION // Hỗ trợ hòa nhập xã hội, cộng đồng
+  COUNSELING_MENTAL_HEALTH // Tư vấn tâm lý, sức khỏe tinh thần
+  TECHNICAL_SUPPORT // Hỗ trợ kỹ thuật, công nghệ, truy cập số
+  VOLUNTEER_ASSISTANCE // Hỗ trợ từ tình nguyện viên
+  OTHER // Nhu cầu khác
+}
+
 enum NeedReportStatus {
   open
   reviewing
@@ -75,12 +109,15 @@ enum NeedReportStatus {
 // ---------- Models ----------
 model User {
   id             String          @id @default(uuid()) @db.Uuid
+  cccd           String          @unique @db.VarChar()
   fullName       String          @db.VarChar(255)
-  gender         String?         @db.VarChar(20)
-  birthDate      DateTime?       @db.Date
-  disabilityType String          @db.VarChar(100)
+  gender         Gender
+  birthDate      DateTime        @db.Date
+  phone          String          @unique @db.VarChar(20)
+  disabilityType DisabilityType
   skills         String[] // text[]
   desiredJob     String?         @db.VarChar(255)
+  address        String?
   status         UserStatus      @default(pending)
   // Region 1-n
   regionId       String?         @db.Uuid
@@ -202,7 +239,7 @@ model NeedReport {
   status       NeedReportStatus    @default(open)
   // Nguoi tao
   createdBy    NeedReportCreatedBy @default(user)
-  category     String              @db.VarChar(100)
+  category     NeedSupportCategory
   description  String
   attachments  String[] // text[] (URLs/paths)
   // Nguoi xu ly
