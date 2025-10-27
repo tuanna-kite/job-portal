@@ -6,6 +6,7 @@ import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-buil
 import registerAuthRoute from "@/backend/http/routes/auth";
 import createNeedReportRoute from "@/backend/http/routes/reports";
 import registerRepsRoute from "@/backend/http/routes/reps";
+import registerUserRoute from "@/backend/http/routes/users";
 import { RequestValidation } from "@/backend/http/validations/request-validation";
 
 const OpenApiApp = new OpenAPIHono({
@@ -55,5 +56,6 @@ OpenApiApp.openapi(
 registerAuthRoute(OpenApiApp);
 registerRepsRoute(OpenApiApp);
 createNeedReportRoute(OpenApiApp);
+registerUserRoute(OpenApiApp);
 
 export default OpenApiApp;
