@@ -106,6 +106,31 @@ enum NeedReportStatus {
   resolved
 }
 
+enum PartnerMajor {
+  EMPLOYER_GENERAL // Doanh nghiệp tuyển dụng tổng quát
+  TRAINING_EDUCATION // Đào tạo / giáo dục nghề
+  ASSISTIVE_DEVICES_PROVIDER // Nhà cung cấp thiết bị trợ giúp
+  ASSISTIVE_TECH_SOFTWARE // Công nghệ trợ năng / phần mềm
+  HEALTHCARE_REHABILITATION // Y tế / phục hồi chức năng
+  NGO_NONPROFIT // Tổ chức phi lợi nhuận
+  GOVERNMENT_AGENCY // Cơ quan nhà nước
+  IT_SOFTWARE // Công nghệ thông tin / Phần mềm
+  BPO_CALL_CENTER // BPO / Tổng đài CSKH
+  MANUFACTURING // Sản xuất
+  RETAIL_ECOMMERCE // Bán lẻ / Thương mại điện tử
+  LOGISTICS_TRANSPORT // Logistics / Vận chuyển
+  HOSPITALITY_TOURISM // Nhà hàng / Khách sạn / Du lịch
+  FINANCIAL_SERVICES // Tài chính / Ngân hàng / Bảo hiểm
+  LEGAL_SERVICES // Pháp lý
+  MEDIA_COMMUNICATIONS // Truyền thông / Nội dung
+  HOUSING_SERVICES // Nhà ở / Cơ sở lưu trú xã hội
+  ACCESSIBILITY_SERVICES // Dịch vụ hỗ trợ tiếp cận (phiên dịch ngôn ngữ ký hiệu, lối tiếp cận…)
+  DATA_ANNOTATION_TRANSLATION // Gán nhãn dữ liệu / Biên dịch
+  AGRICULTURE_CONSTRUCTION // Nông nghiệp / Xây dựng
+  COMMUNITY_VOLUNTEER // Cộng đồng / Tình nguyện
+  OTHER // Khác
+}
+
 // ---------- Models ----------
 model User {
   id             String          @id @default(uuid()) @db.Uuid
@@ -157,6 +182,7 @@ model Representative {
   assignedCases       Case[]
   // Reports phu trach: n-1
   needReportsAssigned NeedReport[]
+  notes               String?
   // Timestamp
   createdAt           DateTime     @default(now()) @db.Timestamptz(6)
   updatedAt           DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
@@ -195,11 +221,13 @@ model Admin {
 model Opportunity {
   id           String                  @id @default(uuid()) @db.Uuid
   title        String                  @db.VarChar(255)
+  partnerId    String                  @db.Uuid
+  partner      Partner                 @relation(fields: [partnerId], references: [id])
+  locationType OpportunityLocationType @default(remote)
+  address      String
   description  String?
   requirements String?
-  locationType OpportunityLocationType @default(remote)
   salaryRange  String?                 @db.VarChar(100)
-  source       String?                 @db.VarChar(255)
   status       OpportunityStatus       @default(open)
   // Cases: n-1
   cases        Case[]
@@ -252,4 +280,19 @@ model NeedReport {
   @@index([userId])
   @@index([assignedToId])
   @@map("need_reports")
+}
+
+model Partner {
+  id            String        @id @default(uuid()) @db.Uuid
+  email         String        @unique
+  phone         String        @unique
+  major         PartnerMajor
+  address       String
+  notes         String?
+  status        UserStatus    @default(pending)
+  opportunities Opportunity[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("partners")
 }

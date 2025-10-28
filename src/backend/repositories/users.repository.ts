@@ -37,4 +37,12 @@ export class UsersRepository {
   findByPhone(phone: string) {
     return this.db.user.findUnique({ where: { phone } });
   }
+
+  findByRep(repId: string) {
+    return this.db.user.findMany({ where: { repId } });
+  }
+
+  findAll() {
+    return this.db.user.findMany();
+  }
 }

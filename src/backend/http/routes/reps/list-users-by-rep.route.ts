@@ -1,13 +1,13 @@
 import { createRoute } from "@hono/zod-openapi";
 
-export const getUserByCccdRoute = createRoute({
+const listUsersByRepRoute = createRoute({
   method: "get",
-  path: "/users/cccd/{cccd}",
-  tags: ["Users"],
+  path: "/reps/{repId}/users",
+  tags: ["Reps"],
   request: {},
   responses: {
     200: { description: "OK" },
   },
 });
 
-export default getUserByCccdRoute;
+export default listUsersByRepRoute;

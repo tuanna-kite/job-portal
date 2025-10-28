@@ -28,4 +28,15 @@ export class RepsController {
       200,
     );
   };
+
+  public findAll = async (ctx: Context) => {
+    const reps = await this.service.findAll();
+    return ctx.json(ResponseBuilder.ok(reps));
+  };
+
+  public listUsersByRep = async (ctx: Context) => {
+    const repId = ctx.req.param("repId");
+    const users = await this.service.listUsersByRep(repId);
+    return ctx.json(ResponseBuilder.ok(users));
+  };
 }

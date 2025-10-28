@@ -31,4 +31,8 @@ export class RepsRepository {
   async findById(id: string) {
     return this.db.representative.findUnique({ where: { id } });
   }
+
+  findAll() {
+    return this.db.representative.findMany();
+  }
 }

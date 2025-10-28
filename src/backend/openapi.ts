@@ -4,6 +4,8 @@ import { OpenAPIHono, z } from "@hono/zod-openapi";
 
 import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-builder";
 import registerAuthRoute from "@/backend/http/routes/auth";
+import registerOpportunitiesRoute from "@/backend/http/routes/opportunities";
+import registerPartnerRoute from "@/backend/http/routes/partners";
 import createNeedReportRoute from "@/backend/http/routes/reports";
 import registerRepsRoute from "@/backend/http/routes/reps";
 import registerUserRoute from "@/backend/http/routes/users";
@@ -57,5 +59,7 @@ registerAuthRoute(OpenApiApp);
 registerRepsRoute(OpenApiApp);
 createNeedReportRoute(OpenApiApp);
 registerUserRoute(OpenApiApp);
+registerPartnerRoute(OpenApiApp);
+registerOpportunitiesRoute(OpenApiApp);
 
 export default OpenApiApp;

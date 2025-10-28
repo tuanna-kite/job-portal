@@ -24,4 +24,8 @@ export class UsersService {
   }
 
   async createUser(dto: CreateUserDto) {}
+
+  async findAll() {
+    return this.repo.findAll();
+  }
 }

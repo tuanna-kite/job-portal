@@ -7,7 +7,7 @@ import type { Context } from "hono";
 export class UsersController {
   constructor(private service = new UsersService()) {}
 
-  // TODO: Create User with Support request
+  // TODO: Create User
   create = async (ctx: Context) => {
     const dto = await ctx.req.json<CreateUserDto>();
     const user = await this.service.createUser(dto);
@@ -28,7 +28,8 @@ export class UsersController {
   };
 
   // TODO: Filter with Pagination
-  paginate = (ctx: Context) => {
-    return ctx.json(ResponseBuilder.ok([]));
+  paginate = async (ctx: Context) => {
+    const users = await this.service.findAll();
+    return ctx.json(ResponseBuilder.ok(users));
   };
 }

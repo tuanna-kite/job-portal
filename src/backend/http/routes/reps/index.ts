@@ -1,6 +1,8 @@
 import { RepsController } from "@/backend/controllers/reps.controller";
 import { createRepRoute } from "@/backend/http/routes/reps/create-rep.route";
 import getRepDetailRoute from "@/backend/http/routes/reps/get-detail.route";
+import listRepsRoute from "@/backend/http/routes/reps/list-reps.route";
+import listUsersByRepRoute from "@/backend/http/routes/reps/list-users-by-rep.route";
 
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
@@ -9,10 +11,11 @@ function registerRepsRoute(app: OpenAPIHono) {
 
   app.openapi(createRepRoute, repsController.create);
   app.openapi(getRepDetailRoute, repsController.findById);
+  app.openapi(listRepsRoute, repsController.findAll);
+  app.openapi(listUsersByRepRoute, repsController.listUsersByRep);
 
   // TODO: Update Rep
   // TODO: Filter Reps with Paginate
-  // TODO: List all user by rep
 }
 
 export default registerRepsRoute;

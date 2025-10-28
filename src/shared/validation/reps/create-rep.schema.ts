@@ -12,6 +12,7 @@ export const CreateRepSchema = z
     regionScopeId: z
       .uuid()
       .openapi({ example: "0ee5b7b9-7b6d-4b55-a206-74fc7cc70b3e" }),
+    notes: z.string().optional(),
   })
   .openapi("CreateRepDto");
 
@@ -45,5 +46,6 @@ export const RepEntity = z
       format: "date-time",
       example: "2025-10-26T18:20:22.525Z",
     }),
+    notes: z.string().nullable().default(null),
   })
   .openapi("Representative");

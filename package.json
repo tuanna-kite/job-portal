@@ -12,7 +12,7 @@
     "format:check": "prettier . --check",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepare": "husky",
-    "seed:admin": "tsx prisma/seed-admin.ts",
+    "seed:admin": "tsx prisma/seed-admins.ts",
     "seed:regions": "tsx prisma/seed-regions.ts"
   },
   "lint-staged": {
