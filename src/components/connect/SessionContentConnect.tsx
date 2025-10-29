@@ -35,6 +35,7 @@ import {
   DisabilityTypeLabel,
 } from "@/shared/domains/users/disability-type.enum";
 import { Gender } from "@/shared/domains/users/gender.enum";
+import { useRegions } from "@/shared/http/hooks/regions";
 import { useCreateReportByUser } from "@/shared/http/hooks/reports";
 import { useUserByCccd } from "@/shared/http/hooks/users";
 
@@ -61,6 +62,7 @@ const userInfoSchema = z.object({
   skills: z.string().optional(),
   address: z.string().min(1, "Vui lòng nhập địa chỉ"),
   desiredJob: z.string().optional(),
+  regionId: z.string().min(1, "Vui lòng chọn khu vực"),
 });
 
 const needReportSchema = z.object({
@@ -105,6 +107,7 @@ export default function SessionContentConnect() {
       skills: "",
       address: "",
       desiredJob: "",
+      regionId: "",
     },
   });
 
@@ -127,6 +130,7 @@ export default function SessionContentConnect() {
   );
 
   const createReportMutation = useCreateReportByUser();
+  const { data: regions = [] } = useRegions();
 
   const onCccdSubmit = (data: CccdFormValues) => {
     if (existingUser) {
@@ -181,7 +185,7 @@ export default function SessionContentConnect() {
                   : [],
                 address: userInfo.address,
                 desiredJob: userInfo.desiredJob,
-                regionId: "", // TODO: Get from region selection
+                regionId: userInfo.regionId,
               }
             : undefined,
         category: data.category,
@@ -406,6 +410,38 @@ export default function SessionContentConnect() {
                                 {...field}
                               />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="regionId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Khu vực
+                            </label>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-12 w-full">
+                                  <SelectValue placeholder="Chọn khu vực" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="h-[400px]">
+                                {regions.map((region) => (
+                                  <SelectItem key={region.id} value={region.id}>
+                                    {region.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}

@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 import {
@@ -24,7 +23,6 @@ interface LoginFormProps {
 
 const LoginForm = ({ form, onSubmit, error, isPending }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   return (
     <Form {...form}>
@@ -101,16 +99,6 @@ const LoginForm = ({ form, onSubmit, error, isPending }: LoginFormProps) => {
             </FormItem>
           )}
         />
-
-        <div className="flex w-full items-end justify-end">
-          <div
-            className="mt-4 cursor-pointer text-xs underline hover:text-blue-600"
-            onClick={() => router.push("/forgot-password")}
-          >
-            Quên mật khẩu?
-          </div>
-        </div>
-
         <button
           type="submit"
           disabled={isPending || !form.formState.isValid}
