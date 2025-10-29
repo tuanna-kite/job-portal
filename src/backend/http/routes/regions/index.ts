@@ -36,7 +36,7 @@ function createRegionRoutes(app: OpenAPIHono) {
   app.openapi(getRegionsRoute, async (c) => {
     const regionsRepo = new RegionsRepository();
     const regions = await regionsRepo.findAll();
-    
+
     return c.json(ResponseBuilder.ok(regions));
   });
 }

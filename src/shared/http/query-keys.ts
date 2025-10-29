@@ -8,5 +8,3 @@ export const qk = {
   caseTimeline: (id: string) => ["case-timeline", id] as const,
   reportDetail: (id: string) => ["report-detail", id] as const,
 };
-
-

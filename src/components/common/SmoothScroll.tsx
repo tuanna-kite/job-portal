@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 interface SmoothScrollLinkProps {
   href: string;
@@ -12,13 +12,13 @@ interface SmoothScrollLinkProps {
 export function SmoothScrollLink({
   href,
   children,
-  className = '',
+  className = "",
   offset = 80,
 }: SmoothScrollLinkProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    const targetId = href.startsWith('#') ? href.slice(1) : href;
+    const targetId = href.startsWith("#") ? href.slice(1) : href;
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {
@@ -27,7 +27,7 @@ export function SmoothScrollLink({
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   };
@@ -49,7 +49,7 @@ export function scrollToSection(sectionId: string, offset: number = 80) {
 
     window.scrollTo({
       top: offsetPosition,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   }
 }

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import '@/styles/ckeditor.css';
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import "@/styles/ckeditor.css";
 
 interface CKEditorWrapperProps {
   value: string;
@@ -13,7 +13,7 @@ interface CKEditorWrapperProps {
 const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
   value,
   onChange,
-  placeholder = 'Nhập nội dung...',
+  placeholder = "Nhập nội dung...",
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +35,8 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
       try {
         // Dynamic imports
         const [ckeditorReact, classicEditor] = await Promise.all([
-          import('@ckeditor/ckeditor5-react'),
-          import('@ckeditor/ckeditor5-build-classic'),
+          import("@ckeditor/ckeditor5-react"),
+          import("@ckeditor/ckeditor5-build-classic"),
         ]);
 
         if (!isMounted) return;
@@ -47,9 +47,9 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
         setIsLoaded(true);
         setError(null);
       } catch (err) {
-        console.error('Failed to load CKEditor:', err);
+        console.error("Failed to load CKEditor:", err);
         if (isMounted) {
-          setError('Không thể tải trình soạn thảo');
+          setError("Không thể tải trình soạn thảo");
         }
       }
     };
@@ -68,8 +68,8 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
     const retryLoad = async () => {
       try {
         const [ckeditorReact, classicEditor] = await Promise.all([
-          import('@ckeditor/ckeditor5-react'),
-          import('@ckeditor/ckeditor5-build-classic'),
+          import("@ckeditor/ckeditor5-react"),
+          import("@ckeditor/ckeditor5-build-classic"),
         ]);
 
         CKEditorRef.current = ckeditorReact.CKEditor;
@@ -77,8 +77,8 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
         setIsLoaded(true);
         setError(null);
       } catch (err) {
-        console.error('Retry failed:', err);
-        setError('Vẫn không thể tải trình soạn thảo');
+        console.error("Retry failed:", err);
+        setError("Vẫn không thể tải trình soạn thảo");
       }
     };
 
@@ -87,7 +87,7 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
 
   if (!isClient) {
     return (
-      <div className='border border-gray-300 rounded p-4 text-center'>
+      <div className="rounded border border-gray-300 p-4 text-center">
         <p>Đang khởi tạo...</p>
       </div>
     );
@@ -95,30 +95,30 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
 
   if (error) {
     return (
-      <div className='border border-red-300 rounded p-4 bg-red-50'>
-        <p className='text-red-600 mb-2'>{error}</p>
-        <div className='flex gap-2 justify-center mb-4'>
-          <Button variant='outline' size='sm' onClick={handleRetry}>
+      <div className="rounded border border-red-300 bg-red-50 p-4">
+        <p className="mb-2 text-red-600">{error}</p>
+        <div className="mb-4 flex justify-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRetry}>
             Thử lại
           </Button>
           <Button
-            variant='ghost'
-            size='sm'
+            variant="ghost"
+            size="sm"
             onClick={() => window.location.reload()}
           >
             Tải lại trang
           </Button>
         </div>
         <div>
-          <p className='text-sm mb-2 text-gray-600'>
+          <p className="mb-2 text-sm text-gray-600">
             Sử dụng trình soạn thảo đơn giản:
           </p>
           <Textarea
             value={value}
-            onChange={e => onChange(e.target.value)}
+            onChange={(e) => onChange(e.target.value)}
             rows={8}
             placeholder={placeholder}
-            className='w-full'
+            className="w-full"
           />
         </div>
       </div>
@@ -127,9 +127,9 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
 
   if (!isLoaded || !CKEditorRef.current || !ClassicEditorRef.current) {
     return (
-      <div className='border border-gray-300 rounded p-4 text-center'>
+      <div className="rounded border border-gray-300 p-4 text-center">
         <p>Đang tải trình soạn thảo...</p>
-        <p className='text-sm mt-2 text-gray-500'>Vui lòng đợi...</p>
+        <p className="mt-2 text-sm text-gray-500">Vui lòng đợi...</p>
       </div>
     );
   }
@@ -139,10 +139,10 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
 
   return (
     <div
-      className='border border-gray-300 rounded ckeditor-wrapper'
+      className="ckeditor-wrapper rounded border border-gray-300"
       style={
         {
-          '--ck-min-height': '120px',
+          "--ck-min-height": "120px",
         } as React.CSSProperties
       }
     >
@@ -150,27 +150,27 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
         editor={ClassicEditor}
         data={value}
         config={{
-          licenseKey: 'GPL',
+          licenseKey: "GPL",
           toolbar: [
-            'heading',
-            '|',
-            'bold',
-            'italic',
-            'link',
-            '|',
-            'bulletedList',
-            'numberedList',
-            '|',
-            'outdent',
-            'indent',
-            '|',
-            'blockQuote',
-            '|',
-            'undo',
-            'redo',
+            "heading",
+            "|",
+            "bold",
+            "italic",
+            "link",
+            "|",
+            "bulletedList",
+            "numberedList",
+            "|",
+            "outdent",
+            "indent",
+            "|",
+            "blockQuote",
+            "|",
+            "undo",
+            "redo",
           ],
           placeholder: placeholder,
-          height: '120px',
+          height: "120px",
           // Ensure list editing works properly
           list: {
             properties: {
@@ -184,10 +184,10 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
             transformations: {
               include: [
                 // Enable all typing transformations including lists
-                'quotes',
-                'typography',
-                'symbols',
-                'mathematical',
+                "quotes",
+                "typography",
+                "symbols",
+                "mathematical",
               ],
             },
           },
@@ -197,11 +197,11 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
 
           // Ensure the editor is properly focused and editable
           const editingView = editor.editing.view;
-          const domRoot = editingView.domRoots.get('main');
+          const domRoot = editingView.domRoots.get("main");
 
           if (domRoot) {
             // Make sure contenteditable is true
-            domRoot.setAttribute('contenteditable', 'true');
+            domRoot.setAttribute("contenteditable", "true");
           }
         }}
         onChange={(event: any, editor: any) => {
@@ -209,13 +209,13 @@ const CKEditorWrapper: React.FC<CKEditorWrapperProps> = ({
             const data = editor.getData();
             onChange(data);
           } catch (err) {
-            console.error('Error getting editor data:', err);
+            console.error("Error getting editor data:", err);
           }
         }}
         onError={(error: any, { willEditorRestart }: any) => {
-          console.error('CKEditor error:', error);
+          console.error("CKEditor error:", error);
           if (!willEditorRestart) {
-            setError('Có lỗi xảy ra với trình soạn thảo');
+            setError("Có lỗi xảy ra với trình soạn thảo");
           }
         }}
       />

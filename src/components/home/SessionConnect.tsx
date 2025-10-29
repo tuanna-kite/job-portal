@@ -62,12 +62,14 @@ export default function SessionConnect() {
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex w-full items-start gap-2">
-                    <span className="shrink-0 font-medium text-gray-400">
-                      {String(item.id).padStart(2, "0")}.
-                    </span>
+                      <span className="shrink-0 font-medium text-gray-400">
+                        {String(item.id).padStart(2, "0")}.
+                      </span>
                       <h3
                         className={`flex-1 text-left font-semibold transition-colors ${
-                          activeId === item.id ? "text-gray-900" : "text-gray-500"
+                          activeId === item.id
+                            ? "text-gray-900"
+                            : "text-gray-500"
                         }`}
                       >
                         {item.title}
@@ -103,7 +105,7 @@ export default function SessionConnect() {
           <Image
             src={bannerConnect}
             alt="logo app"
-            className="my-4 w-[390px] lg:w-[540px] rounded-lg md:w-full"
+            className="my-4 w-[390px] rounded-lg md:w-full lg:w-[540px]"
           />
         </div>
       </div>

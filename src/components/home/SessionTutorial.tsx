@@ -2,9 +2,7 @@
 
 import React from "react";
 
-
 export default function SessionTutorial() {
-
   const steps = [
     {
       id: "01",
@@ -30,26 +28,26 @@ export default function SessionTutorial() {
     <div className="h-max bg-neutral-50 py-[60px] md:py-[140px]">
       <div className="mx-auto w-full max-w-[1280px] px-6 md:px-10">
         <div className="">
-          <div className="text-3xl font-medium text-center md:text-5xl md:leading-[60px]">
+          <div className="text-center text-3xl font-medium md:text-5xl md:leading-[60px]">
             Quy trình 3 bước để người khuyết tật tiếp cận việc làm
           </div>
-          <div className="text-center mt-4">
-            Việc Lành là một mạng lưới nhân văn được thiết kế để giải quyết 3 rào cản lớn nhất mà người khuyết tật gặp phải khi tìm việc.
+          <div className="mt-4 text-center">
+            Việc Lành là một mạng lưới nhân văn được thiết kế để giải quyết 3
+            rào cản lớn nhất mà người khuyết tật gặp phải khi tìm việc.
           </div>
         </div>
 
-
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {steps.map((step) => (
             <div
               key={step.id}
-              className="relative rounded-2xl overflow-hidden group"
+              className="group relative overflow-hidden rounded-2xl"
             >
               {/* Ảnh nền */}
               <img
                 src={step.img}
                 alt={step.title}
-                className="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                className="h-72 w-full transform object-cover transition-transform duration-500 group-hover:scale-105"
               />
 
               {/* Lớp mờ overlay */}
@@ -60,8 +58,8 @@ export default function SessionTutorial() {
                 <span className="text-sm font-medium opacity-80">
                   {step.id}
                 </span>
-                <h3 className="text-lg font-semibold mt-1">{step.title}</h3>
-                <p className="text-sm mt-1 opacity-90">{step.desc}</p>
+                <h3 className="mt-1 text-lg font-semibold">{step.title}</h3>
+                <p className="mt-1 text-sm opacity-90">{step.desc}</p>
               </div>
             </div>
           ))}

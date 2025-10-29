@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import clsx from "clsx";
 
 interface ITitleProps {
   label: string;
@@ -11,17 +11,17 @@ export function Title({ label, title, subTitle, containerClass }: ITitleProps) {
   return (
     <div
       className={clsx(
-        'flex flex-col gap-2 items-center lg:w-[60%]',
-        containerClass
+        "flex flex-col items-center gap-2 lg:w-[60%]",
+        containerClass,
       )}
     >
-      <div className='text-primary-main w-fit text-lg font-semibold'>
+      <div className="text-primary-main w-fit text-lg font-semibold">
         {label}
       </div>
-      <div className='font-bold text-2xl leading-9 lg:text-3xl text-center lg:leading-12 w-full text-[#212B36]'>
+      <div className="w-full text-center text-2xl leading-9 font-bold text-[#212B36] lg:text-3xl lg:leading-12">
         {title}
       </div>
-      <div className='text-[#212B36] text-center text-base '>{subTitle}</div>
+      <div className="text-center text-base text-[#212B36]">{subTitle}</div>
     </div>
   );
 }

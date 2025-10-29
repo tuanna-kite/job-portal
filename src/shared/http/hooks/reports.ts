@@ -32,5 +32,3 @@ export function useReportDetail(id: string | null) {
     select: (res) => res.data,
   });
 }
-
-

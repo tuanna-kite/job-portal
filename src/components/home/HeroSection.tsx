@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 
 import "./index.css";
 
- 
 import { Star1 } from "iconsax-react";
 import Image from "next/image";
 // eslint-disable-next-line import/order
@@ -49,19 +48,19 @@ const HeroSection = () => {
           </Button>
         </div>
         <div className="mt-20 max-w-[1280px] px-6 md:px-10">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="hidden md:block">
               <div className="flex items-center gap-2 text-xl font-semibold text-white">
                 <Star1 size="32" color="#22C55E" variant="Bold" />
                 4.8
               </div>
-              <div className="text-white mt-2">(2.004 Đánh giá)</div>
+              <div className="mt-2 text-white">(2.004 Đánh giá)</div>
             </div>
             <div>
               <div className="text-white">
                 Giá trị cốt lõi dẫn lối mọi hành động
               </div>
-              <div className="flex gap-4 md:gap-16 mt-2">
+              <div className="mt-2 flex gap-4 md:gap-16">
                 <div className="text-white">HÒA NHẬP</div>
                 <div className="text-white">TÔN TRỌNG</div>
                 <div className="text-white">BÌNH ĐẲNG</div>

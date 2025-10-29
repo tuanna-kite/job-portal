@@ -40,5 +40,3 @@ export function useUserByCccd(cccd: string | null) {
     select: (res) => res.data,
   });
 }
-
-

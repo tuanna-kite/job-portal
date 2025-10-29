@@ -30,7 +30,8 @@ const buildQuery = (query?: RequestOptions["query"]) => {
   if (!query) return "";
   const params = new URLSearchParams();
   Object.entries(query).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) params.append(key, String(value));
+    if (value !== undefined && value !== null)
+      params.append(key, String(value));
   });
   const s = params.toString();
   return s ? `?${s}` : "";
@@ -71,5 +72,3 @@ export async function apiFetch<T>(
 
   return json as ApiSuccess<T>;
 }
-
-

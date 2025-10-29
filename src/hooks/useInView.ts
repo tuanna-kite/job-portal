@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface UseInViewOptions {
   threshold?: number;
@@ -9,9 +9,9 @@ interface UseInViewOptions {
 }
 
 export function useInView<T extends HTMLElement = HTMLDivElement>(
-  options: UseInViewOptions = {}
+  options: UseInViewOptions = {},
 ) {
-  const { threshold = 0.1, rootMargin = '0px', triggerOnce = true } = options;
+  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true } = options;
   const [isInView, setIsInView] = useState(false);
   const [hasTriggered, setHasTriggered] = useState(false);
   const ref = useRef<T>(null);
@@ -35,7 +35,7 @@ export function useInView<T extends HTMLElement = HTMLDivElement>(
       {
         threshold,
         rootMargin,
-      }
+      },
     );
 
     observer.observe(element);

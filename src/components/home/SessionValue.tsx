@@ -3,7 +3,6 @@
 import { ArrowRight2 } from "iconsax-react";
 import React, { useState } from "react";
 
-
 export default function SessionValue() {
   const items = [
     {
@@ -37,9 +36,14 @@ export default function SessionValue() {
       <div className="mx-auto w-full max-w-[1280px] px-6 md:px-10">
         <div className="mt-6 flex flex-col justify-between gap-20 md:flex-row">
           <div>
-            <div className="text-4xl">Giá trị <br />
-              của Việc Lành</div>
-            <div className="mt-4">Chúng tôi xây dựng nền tảng đôi bên cùng có lợi cho cộng đồng bền vững.</div>
+            <div className="text-4xl">
+              Giá trị <br />
+              của Việc Lành
+            </div>
+            <div className="mt-4">
+              Chúng tôi xây dựng nền tảng đôi bên cùng có lợi cho cộng đồng bền
+              vững.
+            </div>
           </div>
           <div className="w-full max-w-xl divide-y divide-gray-200">
             {items.map((item) => (
@@ -77,15 +81,12 @@ export default function SessionValue() {
                   }}
                 >
                   {item.content && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      {item.content}
-                    </p>
+                    <p className="mt-2 text-sm text-gray-500">{item.content}</p>
                   )}
                 </div>
               </div>
             ))}
           </div>
-
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 
 export function useDebounce<T>(value: T, delayMs: number = 500): T {
   const [debouncedValue, setDebouncedValue] = React.useState<T>(value);

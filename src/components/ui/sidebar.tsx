@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ArrowRight2,
@@ -8,13 +8,13 @@ import {
   Book,
   Chart21,
   CloseSquare,
-} from 'iconsax-react';
-import Image from 'next/image';
-import { useRouter, usePathname } from 'next/navigation';
-import * as React from 'react';
+} from "iconsax-react";
+import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
+import * as React from "react";
 
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   activeTab?: string;
@@ -26,7 +26,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
   (
     { className, activeTab, onTabChange, isOpen = true, onToggle, ...props },
-    ref
+    ref,
   ) => {
     const router = useRouter();
     const pathname = usePathname();
@@ -48,85 +48,85 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       };
 
       checkMobile();
-      window.addEventListener('resize', checkMobile);
+      window.addEventListener("resize", checkMobile);
 
-      return () => window.removeEventListener('resize', checkMobile);
+      return () => window.removeEventListener("resize", checkMobile);
     }, [isMobile, isOpen, onToggle]);
 
     const menuItems = [
       {
-        section: 'TỔNG QUAN',
+        section: "TỔNG QUAN",
         items: [
           {
-            id: 'dashboard',
-            label: 'Bảng điều khiển',
+            id: "dashboard",
+            label: "Bảng điều khiển",
             icon: Category2,
-            href: '/admin',
+            href: "/admin",
           },
         ],
       },
       {
-        section: 'QUẢN LÝ',
+        section: "QUẢN LÝ",
         items: [
           {
-            id: 'users',
-            label: 'Người dùng',
+            id: "users",
+            label: "Người dùng",
             icon: UserSquare,
-            href: '/admin/users',
+            href: "/admin/users",
           },
           {
-            id: 'courses',
-            label: 'Khóa học',
+            id: "courses",
+            label: "Khóa học",
             icon: Book,
-            href: '/admin/courses',
+            href: "/admin/courses",
             hasSubmenu: true,
             subItems: [
               {
-                id: 'course-list',
-                label: 'Danh sách khóa học',
-                href: '/admin/courses',
+                id: "course-list",
+                label: "Danh sách khóa học",
+                href: "/admin/courses",
               },
               {
-                id: 'course-categories',
-                label: 'Danh mục khóa học',
-                href: '/admin/courses/categories',
+                id: "course-categories",
+                label: "Danh mục khóa học",
+                href: "/admin/courses/categories",
               },
             ],
           },
           {
-            id: 'challenges',
-            label: 'Thử thách',
+            id: "challenges",
+            label: "Thử thách",
             icon: Chart21,
-            href: '/admin/challenges',
+            href: "/admin/challenges",
             hasSubmenu: true,
             subItems: [
               {
-                id: 'challenge-list',
-                label: 'Danh sách',
-                href: '/admin/challenges',
+                id: "challenge-list",
+                label: "Danh sách",
+                href: "/admin/challenges",
               },
               {
-                id: 'challenge-scores',
-                label: 'Điểm',
-                href: '/admin/challenges/scores',
+                id: "challenge-scores",
+                label: "Điểm",
+                href: "/admin/challenges/scores",
               },
             ],
           },
           {
-            id: 'reviews',
-            label: 'Đánh giá',
+            id: "reviews",
+            label: "Đánh giá",
             icon: Star1,
-            href: '/admin/reviews',
+            href: "/admin/reviews",
           },
         ],
       },
     ];
 
     const toggleExpanded = (itemId: string) => {
-      setExpandedItems(prev =>
+      setExpandedItems((prev) =>
         prev.includes(itemId)
-          ? prev.filter(id => id !== itemId)
-          : [...prev, itemId]
+          ? prev.filter((id) => id !== itemId)
+          : [...prev, itemId],
       );
     };
 
@@ -151,14 +151,14 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 
     // Auto-expand submenu if current path matches
     React.useEffect(() => {
-      menuItems.forEach(section => {
-        section.items.forEach(item => {
+      menuItems.forEach((section) => {
+        section.items.forEach((item) => {
           if (item.hasSubmenu && item.subItems) {
-            const hasActiveSubItem = item.subItems.some(subItem =>
-              isActiveRoute(subItem.href)
+            const hasActiveSubItem = item.subItems.some((subItem) =>
+              isActiveRoute(subItem.href),
             );
             if (hasActiveSubItem && !expandedItems.includes(item.id)) {
-              setExpandedItems(prev => [...prev, item.id]);
+              setExpandedItems((prev) => [...prev, item.id]);
             }
           }
         });
@@ -168,23 +168,23 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     // Handle escape key to close sidebar
     React.useEffect(() => {
       const handleEscape = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && isOpen && isMobile && onToggle) {
+        if (event.key === "Escape" && isOpen && isMobile && onToggle) {
           onToggle();
         }
       };
 
       if (isOpen && isMobile) {
-        document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
       }
     }, [isOpen, isMobile, onToggle]);
 
     // Prevent body scroll when sidebar is open on mobile
     React.useEffect(() => {
       if (isMobile && isOpen) {
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = "hidden";
         return () => {
-          document.body.style.overflow = 'unset';
+          document.body.style.overflow = "unset";
         };
       }
     }, [isMobile, isOpen]);
@@ -194,7 +194,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         {/* Mobile Overlay */}
         {isOpen && isMobile && (
           <div
-            className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden'
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
             onClick={onToggle}
           />
         )}
@@ -203,64 +203,64 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         <div
           ref={ref}
           className={cn(
-            'fixed lg:relative inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-gray-50 border-r border-gray-200',
+            "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r border-gray-200 bg-gray-50 lg:relative",
             // Smooth transition for all screen sizes
-            'transition-transform duration-300 ease-in-out',
+            "transition-transform duration-300 ease-in-out",
             // Mobile: Transform based on isOpen state
-            !isOpen && 'lg:translate-x-0 -translate-x-full',
+            !isOpen && "-translate-x-full lg:translate-x-0",
             // Desktop: Show/hide based on isOpen state
-            !isOpen && 'lg:hidden',
-            className
+            !isOpen && "lg:hidden",
+            className,
           )}
           {...props}
         >
           {/* Header with Toggle Button */}
-          <div className='flex h-16 items-center justify-between px-6 border-b border-gray-200'>
+          <div className="flex h-16 items-center justify-between border-b border-gray-200 px-6">
             <Image
-              src='/logo-app.png'
-              alt='Logo'
+              src="/logo-app.png"
+              alt="Logo"
               width={80}
               height={40}
-              className='cursor-pointer'
+              className="cursor-pointer"
             />
             <Button
-              variant='ghost'
-              size='sm'
+              variant="ghost"
+              size="sm"
               onClick={onToggle}
-              className='lg:hidden'
-              aria-label='Close sidebar'
+              className="lg:hidden"
+              aria-label="Close sidebar"
             >
-              <CloseSquare size='20' />
+              <CloseSquare size="20" />
             </Button>
           </div>
 
           {/* Navigation */}
-          <nav className='flex-1 px-4 py-6 space-y-6 overflow-y-auto'>
-            {menuItems.map(section => (
-              <div key={section.section} className='space-y-2'>
-                <h3 className='text-xs font-semibold text-gray-500 uppercase tracking-wider px-2'>
+          <nav className="flex-1 space-y-6 overflow-y-auto px-4 py-6">
+            {menuItems.map((section) => (
+              <div key={section.section} className="space-y-2">
+                <h3 className="px-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">
                   {section.section}
                 </h3>
-                <div className='space-y-1'>
-                  {section.items.map(item => {
+                <div className="space-y-1">
+                  {section.items.map((item) => {
                     const Icon = item.icon;
                     const isActive =
                       isActiveRoute(item.href) ||
                       (item.hasSubmenu &&
-                        item.subItems?.some(subItem =>
-                          isActiveRoute(subItem.href)
+                        item.subItems?.some((subItem) =>
+                          isActiveRoute(subItem.href),
                         ));
                     const isExpanded = isItemExpanded(item.id);
 
                     return (
-                      <div key={item.id} className='space-y-1'>
+                      <div key={item.id} className="space-y-1">
                         <Button
-                          variant={isActive ? 'default' : 'ghost'}
+                          variant={isActive ? "default" : "ghost"}
                           className={cn(
-                            'w-full justify-start cursor-pointer h-10 px-3',
+                            "h-10 w-full cursor-pointer justify-start px-3",
                             isActive
-                              ? 'bg-[#BF2F1F14] text-[#BF2F1F] hover:bg-[#BF2F1F14]'
-                              : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                              ? "bg-[#BF2F1F14] text-[#BF2F1F] hover:bg-[#BF2F1F14]"
+                              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
                           )}
                           onClick={() => {
                             if (item.hasSubmenu) {
@@ -271,19 +271,19 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
                           }}
                         >
                           <Icon
-                            size='24'
-                            variant='Bulk'
-                            color={isActive ? '#BF2F1F' : '#637381'}
-                            className='mr-3'
+                            size="24"
+                            variant="Bulk"
+                            color={isActive ? "#BF2F1F" : "#637381"}
+                            className="mr-3"
                           />
                           {item.label}
                           {item.hasSubmenu && (
                             <ArrowRight2
-                              size='16'
-                              color={isActive ? '#BF2F1F' : '#637381'}
+                              size="16"
+                              color={isActive ? "#BF2F1F" : "#637381"}
                               className={cn(
-                                'ml-auto transition-transform duration-200',
-                                isExpanded && 'rotate-90'
+                                "ml-auto transition-transform duration-200",
+                                isExpanded && "rotate-90",
                               )}
                             />
                           )}
@@ -291,19 +291,19 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 
                         {/* Submenu Items */}
                         {item.hasSubmenu && isExpanded && (
-                          <div className='ml-6 space-y-1'>
-                            {item.subItems?.map(subItem => {
+                          <div className="ml-6 space-y-1">
+                            {item.subItems?.map((subItem) => {
                               const isSubActive = isActiveRoute(subItem.href);
 
                               return (
                                 <Button
                                   key={subItem.id}
-                                  variant='ghost'
+                                  variant="ghost"
                                   className={cn(
-                                    'w-full justify-start cursor-pointer h-8 px-3 text-sm',
+                                    "h-8 w-full cursor-pointer justify-start px-3 text-sm",
                                     isSubActive
-                                      ? 'bg-[#BF2F1F14] text-[#BF2F1F] hover:bg-[#BF2F1F14]'
-                                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                      ? "bg-[#BF2F1F14] text-[#BF2F1F] hover:bg-[#BF2F1F14]"
+                                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
                                   )}
                                   onClick={() =>
                                     handleNavigation(subItem.href, subItem.id)
@@ -311,10 +311,10 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
                                 >
                                   <div
                                     className={cn(
-                                      'w-1.5 h-1.5 rounded-full mr-3',
+                                      "mr-3 h-1.5 w-1.5 rounded-full",
                                       isSubActive
-                                        ? 'bg-[#BF2F1F]'
-                                        : 'bg-gray-400'
+                                        ? "bg-[#BF2F1F]"
+                                        : "bg-gray-400",
                                     )}
                                   />
                                   {subItem.label}
@@ -333,8 +333,8 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         </div>
       </>
     );
-  }
+  },
 );
-Sidebar.displayName = 'Sidebar';
+Sidebar.displayName = "Sidebar";
 
 export { Sidebar };

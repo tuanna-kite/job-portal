@@ -13,7 +13,11 @@ export type Partner = {
   status: "pending" | "active" | "archived";
 };
 
-export function usePartners(filters?: { page?: number; limit?: number; search?: string }) {
+export function usePartners(filters?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   return useQuery({
     queryKey: qk.partners(filters),
     queryFn: () =>
@@ -46,5 +50,3 @@ export function useCreatePartner() {
     },
   });
 }
-
-

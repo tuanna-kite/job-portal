@@ -2,7 +2,6 @@
 
 import "./index.css";
 
- 
 import React from "react";
 
 const HeroAbout = () => {
@@ -14,7 +13,8 @@ const HeroAbout = () => {
           <span>kết nối mọi rào cản.</span>
         </h1>
         <p className="mb-12 max-w-[584px] text-base md:text-xl">
-          Giải pháp nhân văn kiến tạo cơ hội việc làm từ xa và hỗ trợ sinh kế toàn diện cho người khuyết tật.
+          Giải pháp nhân văn kiến tạo cơ hội việc làm từ xa và hỗ trợ sinh kế
+          toàn diện cho người khuyết tật.
         </p>
       </div>
     </section>

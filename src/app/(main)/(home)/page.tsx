@@ -15,7 +15,7 @@ function HomePage() {
       <SessionValue />
       <SessionEnd />
     </>
-  )
+  );
 }
 
 export default HomePage;

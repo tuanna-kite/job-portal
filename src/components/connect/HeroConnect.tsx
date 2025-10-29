@@ -2,7 +2,6 @@
 
 import "./index.css";
 
- 
 import React from "react";
 
 const HeroConnect = () => {
@@ -14,7 +13,8 @@ const HeroConnect = () => {
           <span>Việc lành của bạn.</span>
         </h1>
         <p className="mb-12 max-w-[584px] text-base md:text-xl">
-          Kết nối với Đại diện Khu vực ngay hôm nay để khởi tạo hồ sơ và mở khóa cơ hội việc làm từ xa.
+          Kết nối với Đại diện Khu vực ngay hôm nay để khởi tạo hồ sơ và mở khóa
+          cơ hội việc làm từ xa.
         </p>
       </div>
     </section>

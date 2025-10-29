@@ -4,7 +4,6 @@ import { useInView } from "@/hooks/useInView";
 
 import type { ReactNode } from "react";
 
-
 interface AnimatedSectionProps {
   children: ReactNode;
   animation?: "fadeInUp" | "fadeInLeft" | "fadeInRight" | "fadeInScale";

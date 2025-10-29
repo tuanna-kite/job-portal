@@ -93,5 +93,3 @@ export function useCaseTimeline(id: string | null) {
     select: (res) => res.data,
   });
 }
-
-

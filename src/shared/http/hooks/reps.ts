@@ -20,7 +20,11 @@ export type Rep = {
   updatedAt: string;
 };
 
-export function useReps(filters?: { page?: number; limit?: number; search?: string }) {
+export function useReps(filters?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   return useQuery({
     queryKey: qk.reps(filters),
     queryFn: () =>
@@ -73,5 +77,3 @@ export function useCreateRep() {
     },
   });
 }
-
-
