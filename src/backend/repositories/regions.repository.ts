@@ -8,4 +8,10 @@ export class RegionsRepository {
   findById(id: string) {
     return this.db.region.findUnique({ where: { id } });
   }
+
+  findAll() {
+    return this.db.region.findMany({
+      orderBy: { name: "asc" },
+    });
+  }
 }

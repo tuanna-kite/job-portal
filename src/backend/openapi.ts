@@ -6,6 +6,7 @@ import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-buil
 import registerAuthRoute from "@/backend/http/routes/auth";
 import registerOpportunitiesRoute from "@/backend/http/routes/opportunities";
 import registerPartnerRoute from "@/backend/http/routes/partners";
+import createRegionRoutes from "@/backend/http/routes/regions";
 import createNeedReportRoute from "@/backend/http/routes/reports";
 import registerRepsRoute from "@/backend/http/routes/reps";
 import registerUserRoute from "@/backend/http/routes/users";
@@ -61,5 +62,6 @@ createNeedReportRoute(OpenApiApp);
 registerUserRoute(OpenApiApp);
 registerPartnerRoute(OpenApiApp);
 registerOpportunitiesRoute(OpenApiApp);
+createRegionRoutes(OpenApiApp);
 
 export default OpenApiApp;

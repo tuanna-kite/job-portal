@@ -1,10 +1,21 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, Send } from "lucide-react";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,74 +26,185 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/text-area";
 import { UploadThingComponent } from "@/components/ui/upload-thing";
+import {
+  NeedReportCategory,
+  NeedSupportCategoryOptions,
+} from "@/shared/domains/reports/need-report-category.enum";
+import {
+  DisabilityType,
+  DisabilityTypeLabel,
+} from "@/shared/domains/users/disability-type.enum";
+import { Gender } from "@/shared/domains/users/gender.enum";
+import { useCreateReportByUser } from "@/shared/http/hooks/reports";
+import { useUserByCccd } from "@/shared/http/hooks/users";
+
+const cccdSchema = z.object({
+  cccd: z
+    .string()
+    .min(1, "Vui lòng nhập số CCCD")
+    .regex(/^\d{9}$|^\d{12}$/, "CCCD/CMND phải gồm 9 hoặc 12 chữ số"),
+});
+
+const userInfoSchema = z.object({
+  fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
+  phone: z
+    .string()
+    .min(9, "Số điện thoại phải có ít nhất 9 ký tự")
+    .max(15, "Số điện thoại không được quá 15 ký tự"),
+  gender: z.nativeEnum(Gender, {
+    message: "Vui lòng chọn giới tính",
+  }),
+  birthDate: z.string().min(1, "Vui lòng chọn ngày sinh"),
+  disabilityType: z.nativeEnum(DisabilityType, {
+    message: "Vui lòng chọn loại khuyết tật",
+  }),
+  skills: z.string().optional(),
+  address: z.string().min(1, "Vui lòng nhập địa chỉ"),
+  desiredJob: z.string().optional(),
+});
+
+const needReportSchema = z.object({
+  category: z.nativeEnum(NeedReportCategory, {
+    message: "Vui lòng chọn loại nhu cầu hỗ trợ",
+  }),
+  description: z.string().min(1, "Vui lòng mô tả nhu cầu của bạn"),
+  attachments: z.array(z.string()),
+  jobType: z.string().optional(),
+  desiredSalary: z.string().optional(),
+  medicalDescription: z.string().optional(),
+  equipmentDescription: z.string().optional(),
+  consent: z.boolean().refine((val) => val === true, {
+    message: "Vui lòng đồng ý với điều khoản",
+  }),
+});
+
+type CccdFormValues = z.infer<typeof cccdSchema>;
+type UserInfoFormValues = z.infer<typeof userInfoSchema>;
+type NeedReportFormValues = z.infer<typeof needReportSchema>;
 
 export default function SessionContentConnect() {
-  const [step, setStep] = useState(1); // 1: Nhập CCCD, 2: Form thông tin
-  const [cccdNumber, setCccdNumber] = useState("");
-  const [isExistingUser, setIsExistingUser] = useState(false); // Fake: false = chưa có, true = đã có
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    gender: "",
-    dob: "",
-    disability: "",
-    skills: "",
-    ward: "",
-    address: "",
-    need: "",
-    // Job support fields
-    desiredJob: "",
-    jobType: "",
-    desiredSalary: "",
-    attachedDocuments: "",
-    attachedDocumentsUrl: "",
-    attachedDocumentsKey: "",
-    // Medical support fields
-    medicalDescription: "",
-    // Equipment support fields
-    equipmentDescription: "",
-    consent: false,
+  const [step, setStep] = useState(1);
+  const [isExistingUser, setIsExistingUser] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+
+  const cccdForm = useForm<CccdFormValues>({
+    resolver: zodResolver(cccdSchema),
+    defaultValues: {
+      cccd: "",
+    },
   });
 
-  const handleChange = (field: string, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  const userInfoForm = useForm<UserInfoFormValues>({
+    resolver: zodResolver(userInfoSchema),
+    defaultValues: {
+      fullName: "",
+      phone: "",
+      gender: Gender.MALE,
+      birthDate: "",
+      disabilityType: DisabilityType.OTHER,
+      skills: "",
+      address: "",
+      desiredJob: "",
+    },
+  });
 
-  const handleCccdSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (cccdNumber.trim()) {
-      // Fake logic: Check if user exists
-      // For demo: if CCCD contains "123" then user exists, otherwise new user
-      const userExists = cccdNumber.includes("123");
-      setIsExistingUser(userExists);
-      setStep(2);
+  const needReportForm = useForm<NeedReportFormValues>({
+    resolver: zodResolver(needReportSchema),
+    defaultValues: {
+      category: NeedReportCategory.JOB_SEEKING,
+      description: "",
+      attachments: [],
+      jobType: "",
+      desiredSalary: "",
+      medicalDescription: "",
+      equipmentDescription: "",
+      consent: false,
+    },
+  });
+
+  const { data: existingUser, isLoading: isLoadingUser } = useUserByCccd(
+    step === 2 ? cccdForm.getValues("cccd") : null,
+  );
+
+  const createReportMutation = useCreateReportByUser();
+
+  const onCccdSubmit = (data: CccdFormValues) => {
+    if (existingUser) {
+      setIsExistingUser(true);
+      setUserData(existingUser);
+    } else {
+      setIsExistingUser(false);
     }
+    setStep(2);
   };
 
   const handleFileUploadComplete = (url: string, key: string) => {
-    setForm((prev) => ({
-      ...prev,
-      attachedDocuments: url.split("/").pop() || "", // Extract filename from URL
-      attachedDocumentsUrl: url,
-      attachedDocumentsKey: key,
-    }));
+    const currentAttachments = needReportForm.getValues("attachments") || [];
+    needReportForm.setValue("attachments", [...currentAttachments, url]);
   };
 
   const handleFileUploadError = (error: Error) => {
     console.error("File upload error:", error);
-    // You can add toast notification here
+    toast.error("Có lỗi khi tải file lên");
   };
 
-  const handleFileUploadBegin = (name: string) => {
-    setForm((prev) => ({
-      ...prev,
-      attachedDocuments: `Đang tải ${name}...`,
-    }));
+  const handleFileUploadBegin = (name: string) => {};
+
+  const onNeedReportSubmit = (data: NeedReportFormValues) => {
+    const cccd = cccdForm.getValues("cccd");
+    const userInfo = isExistingUser ? null : userInfoForm.getValues();
+
+    let description = data.description;
+    if (data.category === NeedReportCategory.JOB_SEEKING) {
+      const desiredJob = userInfo?.desiredJob || "Không xác định";
+      description = `Công việc mong muốn: ${desiredJob}\nLoại hình: ${data.jobType || "Không xác định"}\nMức lương: ${data.desiredSalary || "Không xác định"}\n\nMô tả: ${data.description}`;
+    } else if (data.category === NeedReportCategory.HEALTHCARE_SUPPORT) {
+      description = `Mô tả y tế: ${data.medicalDescription || "Không có"}\n\nMô tả: ${data.description}`;
+    } else if (data.category === NeedReportCategory.ASSISTIVE_DEVICES) {
+      description = `Mô tả thiết bị: ${data.equipmentDescription || "Không có"}\n\nMô tả: ${data.description}`;
+    }
+
+    createReportMutation.mutate(
+      {
+        cccd,
+        userInfo: isExistingUser
+          ? undefined
+          : userInfo
+            ? {
+                fullName: userInfo.fullName,
+                phone: userInfo.phone,
+                gender: userInfo.gender,
+                birthDate: new Date(userInfo.birthDate),
+                disabilityType: userInfo.disabilityType,
+                skills: userInfo.skills
+                  ? userInfo.skills.split(",").map((s) => s.trim())
+                  : [],
+                address: userInfo.address,
+                desiredJob: userInfo.desiredJob,
+                regionId: "", // TODO: Get from region selection
+              }
+            : undefined,
+        category: data.category,
+        description,
+        attachments: data.attachments,
+      } as any,
+      {
+        onSuccess: () => {
+          toast.success("Yêu cầu hỗ trợ đã được gửi thành công!");
+          cccdForm.reset();
+          userInfoForm.reset();
+          needReportForm.reset();
+          setStep(1);
+          setIsExistingUser(false);
+          setUserData(null);
+        },
+        onError: (error: { message?: string; code?: string }) => {
+          toast.error(error?.message || "Có lỗi xảy ra khi gửi yêu cầu");
+        },
+      },
+    );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-  };
   return (
     <div className="h-max bg-white py-[30px] md:py-[70px]">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-3xl px-6 md:px-10">
@@ -94,284 +216,458 @@ export default function SessionContentConnect() {
           bạn với Đại diện khu vực.
         </p>
 
-        {/* Step 1: Nhập CCCD */}
         {step === 1 && (
-          <form onSubmit={handleCccdSubmit} className="space-y-8">
-            <div>
-              <h2 className="mb-4 text-lg font-semibold text-[#1C1C1C]">
-                Thông tin định danh
-              </h2>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Số CCCD
-                </label>
-                <Input
-                  placeholder="Nhập số CCCD"
-                  value={cccdNumber}
-                  onChange={(e) => setCccdNumber(e.target.value)}
-                  className="h-12"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                className="rounded-full bg-[#6941C6] px-6 py-5 text-white hover:bg-[#5A37AD]"
-              >
-                Tiếp theo
-              </Button>
-            </div>
-          </form>
-        )}
-
-        {/* Step 2: Form thông tin */}
-        {step === 2 && (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Thông tin định danh - chỉ hiện khi chưa có user */}
-            {!isExistingUser && (
+          <Form {...cccdForm}>
+            <form
+              onSubmit={cccdForm.handleSubmit(onCccdSubmit)}
+              className="space-y-8"
+            >
               <div>
                 <h2 className="mb-4 text-lg font-semibold text-[#1C1C1C]">
                   Thông tin định danh
                 </h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Input
-                    placeholder="Họ tên đầy đủ"
-                    value={form.name}
-                    onChange={(e) => handleChange("name", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Điện thoại liên hệ"
-                    value={form.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                  />
-                </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <Select
-                    onValueChange={(val: string) => handleChange("gender", val)}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Chọn giới tính" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Nam</SelectItem>
-                      <SelectItem value="female">Nữ</SelectItem>
-                      <SelectItem value="other">Khác</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <div className="relative">
-                    <Input
-                      type="date"
-                      className="rounded-lg border border-gray-300 pr-10"
-                      onChange={(e) => handleChange("dob", e.target.value)}
-                    />
-                    <CalendarDays className="absolute top-3 right-3 h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Select
-                    onValueChange={(val: string) =>
-                      handleChange("disability", val)
-                    }
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Chọn loại khuyết tật chính" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hearing">Nghe / Nói</SelectItem>
-                      <SelectItem value="vision">Thị giác</SelectItem>
-                      <SelectItem value="mobility">Vận động</SelectItem>
-                      <SelectItem value="mental">Khác</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="mt-4">
-                  <Input
-                    placeholder="Các kỹ năng hiện có"
-                    value={form.skills}
-                    onChange={(e) => handleChange("skills", e.target.value)}
-                  />
-                </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <Select
-                    onValueChange={(val: string) => handleChange("ward", val)}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Chọn phường" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="phuong1">Phường 1</SelectItem>
-                      <SelectItem value="phuong2">Phường 2</SelectItem>
-                      <SelectItem value="phuong3">Phường 3</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    placeholder="Nhập địa chỉ cụ thể"
-                    value={form.address}
-                    onChange={(e) => handleChange("address", e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Nhu cầu hỗ trợ */}
-            <div>
-              <h2 className="mb-4 text-lg font-semibold text-[#1C1C1C]">
-                Nhu cầu hỗ trợ
-              </h2>
-              <Select
-                onValueChange={(val: string) => handleChange("need", val)}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Phản ánh nhu cầu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="job">Hỗ trợ việc làm</SelectItem>
-                  <SelectItem value="medical">Y tế & Sức khỏe</SelectItem>
-                  <SelectItem value="equipment">Thiết bị hỗ trợ</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Dynamic UI based on selection */}
-              {form.need === "job" && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Công việc mong muốn
-                    </label>
-                    <Input
-                      placeholder="Nhập công việc mong muốn"
-                      value={form.desiredJob}
-                      onChange={(e) =>
-                        handleChange("desiredJob", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
+                <FormField
+                  control={cccdForm.control}
+                  name="cccd"
+                  render={({ field }) => (
+                    <FormItem>
                       <label className="mb-2 block text-sm font-medium text-gray-700">
-                        Loại hình công việc
+                        Số CCCD
                       </label>
-                      <Select
-                        onValueChange={(val: string) =>
-                          handleChange("jobType", val)
-                        }
-                      >
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Chọn loại hình công việc" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fulltime">
-                            Toàn thời gian
-                          </SelectItem>
-                          <SelectItem value="parttime">
-                            Bán thời gian
-                          </SelectItem>
-                          <SelectItem value="remote">Làm việc từ xa</SelectItem>
-                          <SelectItem value="freelance">Tự do</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          placeholder="Nhập số CCCD"
+                          className="h-12"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={isLoadingUser}
+                  className="rounded-full bg-[#6941C6] px-6 py-5 text-white hover:bg-[#5A37AD] disabled:opacity-50"
+                >
+                  {isLoadingUser ? "Đang kiểm tra..." : "Tiếp theo"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-8">
+            {!isExistingUser && (
+              <Form {...userInfoForm}>
+                <form className="space-y-8">
+                  <div>
+                    <h2 className="mb-4 text-lg font-semibold text-[#1C1C1C]">
+                      Thông tin định danh
+                    </h2>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="fullName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="Họ tên đầy đủ" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={userInfoForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder="Điện thoại liên hệ"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-gray-700">
-                        Mức lương mong muốn
-                      </label>
-                      <Input
-                        placeholder="Khoảng thu nhập"
-                        value={form.desiredSalary}
-                        onChange={(e) =>
-                          handleChange("desiredSalary", e.target.value)
-                        }
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="gender"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Chọn giới tính" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value={Gender.MALE}>Nam</SelectItem>
+                                <SelectItem value={Gender.FEMALE}>
+                                  Nữ
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={userInfoForm.control}
+                        name="birthDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="relative">
+                              <FormControl>
+                                <Input
+                                  type="date"
+                                  className="rounded-lg border border-gray-300 pr-10"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <CalendarDays className="absolute top-3 right-3 h-5 w-5 text-gray-400" />
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="disabilityType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Chọn loại khuyết tật chính" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {Object.values(DisabilityType).map((type) => (
+                                  <SelectItem key={type} value={type}>
+                                    {DisabilityTypeLabel[type]}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="skills"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder="Các kỹ năng hiện có (cách nhau bởi dấu phẩy)"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder="Nhập địa chỉ cụ thể"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
+                </form>
+              </Form>
+            )}
 
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Tài liệu đính kèm
-                    </label>
-                    <UploadThingComponent
-                      value={form.attachedDocuments}
-                      placeholder="Tài liệu đính kèm"
-                      onUploadComplete={handleFileUploadComplete}
-                      onUploadError={handleFileUploadError}
-                      onUploadBegin={handleFileUploadBegin}
+            <Form {...needReportForm}>
+              <form
+                onSubmit={needReportForm.handleSubmit(onNeedReportSubmit)}
+                className="space-y-8"
+              >
+                <div>
+                  <h2 className="mb-4 text-lg font-semibold text-[#1C1C1C]">
+                    Nhu cầu hỗ trợ
+                  </h2>
+                  <FormField
+                    control={needReportForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-12">
+                              <SelectValue placeholder="Phản ánh nhu cầu" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {NeedSupportCategoryOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {needReportForm.watch("category") ===
+                    NeedReportCategory.JOB_SEEKING && (
+                    <div className="mt-4 space-y-4">
+                      <FormField
+                        control={userInfoForm.control}
+                        name="desiredJob"
+                        render={({ field }) => (
+                          <FormItem>
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Công việc mong muốn
+                            </label>
+                            <FormControl>
+                              <Input
+                                placeholder="Nhập công việc mong muốn"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <FormField
+                          control={needReportForm.control}
+                          name="jobType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Loại hình công việc
+                              </label>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-12">
+                                    <SelectValue placeholder="Chọn loại hình công việc" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="fulltime">
+                                    Toàn thời gian
+                                  </SelectItem>
+                                  <SelectItem value="parttime">
+                                    Bán thời gian
+                                  </SelectItem>
+                                  <SelectItem value="remote">
+                                    Làm việc từ xa
+                                  </SelectItem>
+                                  <SelectItem value="freelance">
+                                    Tự do
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={needReportForm.control}
+                          name="desiredSalary"
+                          render={({ field }) => (
+                            <FormItem>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Mức lương mong muốn
+                              </label>
+                              <FormControl>
+                                <Input
+                                  placeholder="Khoảng thu nhập"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                          Tài liệu đính kèm
+                        </label>
+                        <UploadThingComponent
+                          value={needReportForm.watch("attachments")?.[0] || ""}
+                          placeholder="Tài liệu đính kèm"
+                          onUploadComplete={handleFileUploadComplete}
+                          onUploadError={handleFileUploadError}
+                          onUploadBegin={handleFileUploadBegin}
+                        />
+                        <p className="mt-1 flex items-center gap-1 text-xs text-blue-600">
+                          <span>📄</span>
+                          Hình ảnh, PDF, XLSX, DOC, ZIP, RAR
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {needReportForm.watch("category") ===
+                    NeedReportCategory.HEALTHCARE_SUPPORT && (
+                    <div className="mt-4">
+                      <FormField
+                        control={needReportForm.control}
+                        name="medicalDescription"
+                        render={({ field }) => (
+                          <FormItem>
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Mô tả
+                            </label>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Khám chữa bệnh/Thuốc men..."
+                                rows={4}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  {needReportForm.watch("category") ===
+                    NeedReportCategory.ASSISTIVE_DEVICES && (
+                    <div className="mt-4">
+                      <FormField
+                        control={needReportForm.control}
+                        name="equipmentDescription"
+                        render={({ field }) => (
+                          <FormItem>
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Mô tả
+                            </label>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Xe lăn, máy trợ thính..."
+                                rows={4}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  <div className="mt-4">
+                    <FormField
+                      control={needReportForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="mb-2 block text-sm font-medium text-gray-700">
+                            Mô tả chi tiết nhu cầu
+                          </label>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Mô tả chi tiết nhu cầu của bạn..."
+                              rows={4}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <p className="mt-1 flex items-center gap-1 text-xs text-blue-600">
-                      <span>📄</span>
-                      Hình ảnh, PDF, XLSX, DOC, ZIP, RAR
-                    </p>
                   </div>
                 </div>
-              )}
 
-              {form.need === "medical" && (
-                <div className="mt-4">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Mô tả
-                  </label>
-                  <Textarea
-                    placeholder="Khám chữa bệnh/Thuốc men..."
-                    value={form.medicalDescription}
-                    onChange={(e) =>
-                      handleChange("medicalDescription", e.target.value)
-                    }
-                    rows={4}
-                  />
+                <FormField
+                  control={needReportForm.control}
+                  name="consent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-start gap-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            id="consent"
+                          />
+                        </FormControl>
+                        <label
+                          htmlFor="consent"
+                          className="text-sm leading-relaxed text-[#637381]"
+                        >
+                          Tôi đồng ý để Việc Lành sử dụng thông tin trên để khởi
+                          tạo hồ sơ và gắn Đại diện khu vực hỗ trợ tìm việc.
+                        </label>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    disabled={createReportMutation.isPending}
+                    className="rounded-full bg-[#6941C6] px-6 py-5 text-white hover:bg-[#5A37AD] disabled:opacity-50"
+                  >
+                    {createReportMutation.isPending
+                      ? "Đang gửi..."
+                      : "Gửi yêu cầu"}{" "}
+                    <Send className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-
-              {form.need === "equipment" && (
-                <div className="mt-4">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Mô tả
-                  </label>
-                  <Textarea
-                    placeholder="Xe lăn, máy trợ thính..."
-                    value={form.equipmentDescription}
-                    onChange={(e) =>
-                      handleChange("equipmentDescription", e.target.value)
-                    }
-                    rows={4}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Xác nhận */}
-            <div className="flex items-start gap-3">
-              <Checkbox
-                checked={form.consent}
-                onCheckedChange={(val) => handleChange("consent", !!val)}
-                id="consent"
-              />
-              <label
-                htmlFor="consent"
-                className="text-sm leading-relaxed text-[#637381]"
-              >
-                Tôi đồng ý để Việc Lành sử dụng thông tin trên để khởi tạo hồ sơ
-                và gắn Đại diện khu vực hỗ trợ tìm việc.
-              </label>
-            </div>
-
-            {/* Nút gửi */}
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                className="rounded-full bg-[#6941C6] px-6 py-5 text-white hover:bg-[#5A37AD]"
-              >
-                Gửi yêu cầu <Send className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </form>
+              </form>
+            </Form>
+          </div>
         )}
       </div>
     </div>
