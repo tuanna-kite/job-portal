@@ -1,13 +1,14 @@
 "use client";
 
 import {
-  ArrowRight2,
-  Star1,
   Category2,
   UserSquare,
-  Book,
-  Chart21,
   CloseSquare,
+  Location,
+  Briefcase,
+  FolderOpen,
+  MessageText1,
+  Profile,
 } from "iconsax-react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -30,7 +31,6 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
   ) => {
     const router = useRouter();
     const pathname = usePathname();
-    const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
     const [isMobile, setIsMobile] = React.useState(false);
 
     // Check if we're on mobile
@@ -75,62 +75,43 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
             href: "/admin/users",
           },
           {
-            id: "courses",
-            label: "Khóa học",
-            icon: Book,
-            href: "/admin/courses",
-            hasSubmenu: true,
-            subItems: [
-              {
-                id: "course-list",
-                label: "Danh sách khóa học",
-                href: "/admin/courses",
-              },
-              {
-                id: "course-categories",
-                label: "Danh mục khóa học",
-                href: "/admin/courses/categories",
-              },
-            ],
+            id: "locations",
+            label: "Khu vực",
+            icon: Location,
+            href: "/admin/locations",
           },
           {
-            id: "challenges",
-            label: "Thử thách",
-            icon: Chart21,
-            href: "/admin/challenges",
-            hasSubmenu: true,
-            subItems: [
-              {
-                id: "challenge-list",
-                label: "Danh sách",
-                href: "/admin/challenges",
-              },
-              {
-                id: "challenge-scores",
-                label: "Điểm",
-                href: "/admin/challenges/scores",
-              },
-            ],
+            id: "jobs",
+            label: "Việc làm",
+            icon: Briefcase,
+            href: "/admin/jobs",
           },
           {
-            id: "reviews",
-            label: "Đánh giá",
-            icon: Star1,
-            href: "/admin/reviews",
+            id: "profile",
+            label: "Hồ sơ",
+            icon: FolderOpen,
+            href: "/admin/profile",
+          },
+          {
+            id: "support",
+            label: "Yêu cầu hỗ trợ",
+            icon: MessageText1,
+            href: "/admin/support",
+          },
+        ],
+      },
+      {
+        section: "CÀI ĐẶT",
+        items: [
+          {
+            id: "account",
+            label: "Tài khoản",
+            icon: Profile,
+            href: "/admin/account",
           },
         ],
       },
     ];
-
-    const toggleExpanded = (itemId: string) => {
-      setExpandedItems((prev) =>
-        prev.includes(itemId)
-          ? prev.filter((id) => id !== itemId)
-          : [...prev, itemId],
-      );
-    };
-
-    const isItemExpanded = (itemId: string) => expandedItems.includes(itemId);
 
     const handleNavigation = (href: string, itemId: string) => {
       router.push(href);
@@ -148,22 +129,6 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     const isActiveRoute = (href: string) => {
       return pathname === href;
     };
-
-    // Auto-expand submenu if current path matches
-    React.useEffect(() => {
-      menuItems.forEach((section) => {
-        section.items.forEach((item) => {
-          if (item.hasSubmenu && item.subItems) {
-            const hasActiveSubItem = item.subItems.some((subItem) =>
-              isActiveRoute(subItem.href),
-            );
-            if (hasActiveSubItem && !expandedItems.includes(item.id)) {
-              setExpandedItems((prev) => [...prev, item.id]);
-            }
-          }
-        });
-      });
-    }, [pathname]);
 
     // Handle escape key to close sidebar
     React.useEffect(() => {
@@ -244,13 +209,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
                 <div className="space-y-1">
                   {section.items.map((item) => {
                     const Icon = item.icon;
-                    const isActive =
-                      isActiveRoute(item.href) ||
-                      (item.hasSubmenu &&
-                        item.subItems?.some((subItem) =>
-                          isActiveRoute(subItem.href),
-                        ));
-                    const isExpanded = isItemExpanded(item.id);
+                    const isActive = isActiveRoute(item.href);
 
                     return (
                       <div key={item.id} className="space-y-1">
@@ -259,70 +218,21 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
                           className={cn(
                             "h-10 w-full cursor-pointer justify-start px-3",
                             isActive
-                              ? "bg-[#BF2F1F14] text-[#BF2F1F] hover:bg-[#BF2F1F14]"
+                              ? "bg-[#6A62FF14] text-[#6A62FF] hover:bg-[#6A62FF14]"
                               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
                           )}
                           onClick={() => {
-                            if (item.hasSubmenu) {
-                              toggleExpanded(item.id);
-                            } else {
-                              handleNavigation(item.href, item.id);
-                            }
+                            handleNavigation(item.href, item.id);
                           }}
                         >
                           <Icon
-                            size="24"
+                            size="32"
                             variant="Bulk"
-                            color={isActive ? "#BF2F1F" : "#637381"}
+                            color={isActive ? "#6A62FF" : "#637381"}
                             className="mr-3"
                           />
                           {item.label}
-                          {item.hasSubmenu && (
-                            <ArrowRight2
-                              size="16"
-                              color={isActive ? "#BF2F1F" : "#637381"}
-                              className={cn(
-                                "ml-auto transition-transform duration-200",
-                                isExpanded && "rotate-90",
-                              )}
-                            />
-                          )}
                         </Button>
-
-                        {/* Submenu Items */}
-                        {item.hasSubmenu && isExpanded && (
-                          <div className="ml-6 space-y-1">
-                            {item.subItems?.map((subItem) => {
-                              const isSubActive = isActiveRoute(subItem.href);
-
-                              return (
-                                <Button
-                                  key={subItem.id}
-                                  variant="ghost"
-                                  className={cn(
-                                    "h-8 w-full cursor-pointer justify-start px-3 text-sm",
-                                    isSubActive
-                                      ? "bg-[#BF2F1F14] text-[#BF2F1F] hover:bg-[#BF2F1F14]"
-                                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-                                  )}
-                                  onClick={() =>
-                                    handleNavigation(subItem.href, subItem.id)
-                                  }
-                                >
-                                  <div
-                                    className={cn(
-                                      "mr-3 h-1.5 w-1.5 rounded-full",
-                                      isSubActive
-                                        ? "bg-[#BF2F1F]"
-                                        : "bg-gray-400",
-                                    )}
-                                  />
-                                  {subItem.label}
-                                </Button>
-                              );
-                            })}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
