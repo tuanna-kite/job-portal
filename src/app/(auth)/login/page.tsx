@@ -1,13 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 
 import LoginForm from "@/components/forms/LoginForm";
 import { logoMini } from "@/contants/images";
+import { useLogin } from "@/shared/http/hooks/auth";
 
 function LoginPage() {
+  const router = useRouter();
   const form = useForm<any>({
     mode: "onChange", // Validate on blur for better UX
     reValidateMode: "onChange", // Re-validate on change after first validation
@@ -16,8 +19,19 @@ function LoginPage() {
       password: "",
     },
   });
+  const loginMutation = useLogin();
 
-  const onSubmit = () => {};
+  const onSubmit = async (values: { email: string; password: string }) => {
+    try {
+      await loginMutation.mutateAsync(values);
+      // Persist minimal auth flag; backend sets HttpOnly cookie
+      localStorage.setItem("isAdminAuthenticated", "true");
+      localStorage.setItem("adminEmail", values.email);
+      router.replace("/admin");
+    } catch (e) {
+      // no-op: LoginForm should show error if it handles it; otherwise you can add a toast here
+    }
+  };
 
   return (
     <div className="mx-auto flex h-full items-center justify-center bg-white px-6 py-4">
