@@ -60,6 +60,10 @@ export class NeedSupportsService {
     });
   }
 
+  async findAll() {
+    return this.repo.findAll();
+  }
+
   async createNeedSupportByRep() {}
 
   async findById(id: string): Promise<z.infer<typeof NeedReportDetailSchema>> {
@@ -91,5 +95,28 @@ export class NeedSupportsService {
           }
         : null,
     };
+  }
+
+  async update(
+    id: string,
+    dto: {
+      status?: string;
+      assignedToId?: string | null;
+      description?: string;
+    },
+  ) {
+    const report = await this.repo.findById(id);
+    if (!report) {
+      throw new AppError("NOT_FOUND");
+    }
+    return this.repo.update(id, dto);
+  }
+
+  async delete(id: string) {
+    const report = await this.repo.findById(id);
+    if (!report) {
+      throw new AppError("NOT_FOUND");
+    }
+    return this.repo.delete(id);
   }
 }

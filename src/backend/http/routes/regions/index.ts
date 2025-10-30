@@ -5,18 +5,26 @@ import { RegionsRepository } from "@/backend/repositories/regions.repository";
 
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
-const RegionLevelEnum = z.enum(["province", "district", "ward", "municipality"]);
+const RegionLevelEnum = z.enum([
+  "province",
+  "district",
+  "ward",
+  "municipality",
+]);
 
 const RegionSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   level: RegionLevelEnum,
   parentId: z.string().uuid().nullable(),
-  parent: z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-    level: RegionLevelEnum,
-  }).nullable().optional(),
+  parent: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+      level: RegionLevelEnum,
+    })
+    .nullable()
+    .optional(),
 });
 
 const CreateRegionSchema = z.object({
@@ -150,7 +158,7 @@ function createRegionRoutes(app: OpenAPIHono) {
   app.openapi(createRegionRoute, async (c) => {
     const regionsRepo = new RegionsRepository();
     const body = c.req.valid("json");
-    
+
     const region = await regionsRepo.create(body);
 
     return c.json(ResponseBuilder.ok(region), 201);
@@ -160,7 +168,7 @@ function createRegionRoutes(app: OpenAPIHono) {
     const regionsRepo = new RegionsRepository();
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
-    
+
     const region = await regionsRepo.update(id, body);
 
     return c.json(ResponseBuilder.ok(region));
@@ -169,10 +177,12 @@ function createRegionRoutes(app: OpenAPIHono) {
   app.openapi(deleteRegionRoute, async (c) => {
     const regionsRepo = new RegionsRepository();
     const { id } = c.req.valid("param");
-    
+
     await regionsRepo.delete(id);
 
-    return c.json(ResponseBuilder.ok({ message: "Region deleted successfully" }));
+    return c.json(
+      ResponseBuilder.ok({ message: "Region deleted successfully" }),
+    );
   });
 }
 

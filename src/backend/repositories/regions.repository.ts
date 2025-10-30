@@ -7,12 +7,12 @@ export class RegionsRepository {
   constructor(private db: PrismaTx = prisma) {}
 
   findById(id: string) {
-    return this.db.region.findUnique({ 
+    return this.db.region.findUnique({
       where: { id },
       include: {
         parent: true,
         children: true,
-      }
+      },
     });
   }
 
@@ -21,7 +21,7 @@ export class RegionsRepository {
       orderBy: { name: "asc" },
       include: {
         parent: true,
-      }
+      },
     });
   }
 
@@ -30,17 +30,20 @@ export class RegionsRepository {
       data,
       include: {
         parent: true,
-      }
+      },
     });
   }
 
-  update(id: string, data: { name?: string; level?: RegionLevel; parentId?: string | null }) {
+  update(
+    id: string,
+    data: { name?: string; level?: RegionLevel; parentId?: string | null },
+  ) {
     return this.db.region.update({
       where: { id },
       data,
       include: {
         parent: true,
-      }
+      },
     });
   }
 

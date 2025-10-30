@@ -38,12 +38,12 @@ export function useRegions() {
 
 export function useCreateRegion() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: CreateRegionDto) => {
       const response = await apiFetch<Region>("/regions", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: data,
       });
       return response.data;
     },
@@ -55,12 +55,12 @@ export function useCreateRegion() {
 
 export function useUpdateRegion() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateRegionDto }) => {
       const response = await apiFetch<Region>(`/regions/${id}`, {
         method: "PATCH",
-        body: JSON.stringify(data),
+        body: data,
       });
       return response.data;
     },
@@ -72,7 +72,7 @@ export function useUpdateRegion() {
 
 export function useDeleteRegion() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       await apiFetch(`/regions/${id}`, {

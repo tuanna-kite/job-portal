@@ -28,5 +28,3 @@ export function useVerify(enabled = false) {
     select: (res) => res.data.user,
   });
 }
-
-

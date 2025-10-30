@@ -2,12 +2,38 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiFetch } from "@/shared/http/api-client";
 
+export type CaseStatus =
+  | "pending"
+  | "in_progress"
+  | "matched"
+  | "rejected"
+  | "done";
+
 export type Case = {
   id: string;
   userId: string;
+  user?: {
+    id: string;
+    fullName: string;
+    email?: string | null;
+    phone?: string | null;
+    cccd?: string | null;
+  };
   opportunityId: string;
+  opportunity?: {
+    id: string;
+    title: string;
+    partner?: {
+      email: string;
+    };
+  };
   assignedRepId?: string | null;
-  status: "pending" | "in_progress" | "matched" | "rejected" | "done";
+  assignedRep?: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+  status: CaseStatus;
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -34,31 +60,11 @@ export type CaseTimelineEvent = {
   details: string;
 };
 
-export function useCases(
-  filters: {
-    page?: number;
-    limit?: number;
-    userId?: string;
-    opportunityId?: string;
-    assignedRepId?: string;
-    status?: Case["status"];
-  } = {},
-) {
+export function useCases() {
   return useQuery({
-    queryKey: ["cases", filters] as const,
-    queryFn: () =>
-      apiFetch<Case[]>("/cases", {
-        query: {
-          page: filters.page ?? 1,
-          limit: filters.limit ?? 10,
-          userId: filters.userId,
-          opportunityId: filters.opportunityId,
-          assignedRepId: filters.assignedRepId,
-          status: filters.status,
-        },
-      }),
-    select: (res) => ({ items: res.data, pagination: res.pagination }),
-    enabled: true,
+    queryKey: ["cases"] as const,
+    queryFn: () => apiFetch<Case[]>("/cases"),
+    select: (res) => res.data,
   });
 }
 
@@ -81,6 +87,16 @@ export function useUpdateCase() {
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["cases"] });
       qc.invalidateQueries({ queryKey: ["case-timeline", vars.id] });
+    },
+  });
+}
+
+export function useDeleteCase() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch(`/cases/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cases"] });
     },
   });
 }

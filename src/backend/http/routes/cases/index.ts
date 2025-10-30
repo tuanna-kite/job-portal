@@ -63,52 +63,24 @@ CasesRoute.post("/", authMiddleware, async (ctx) => {
 });
 
 CasesRoute.get("/", authMiddleware, async (ctx) => {
-  const { searchParams } = new URL(ctx.req.url);
-
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const userId = searchParams.get("userId");
-  const opportunityId = searchParams.get("opportunityId");
-  const assignedRepId = searchParams.get("assignedRepId");
-  const status = searchParams.get("status");
-
-  const where: any = {};
-
-  if (userId) where.userId = userId;
-  if (opportunityId) where.opportunityId = opportunityId;
-  if (assignedRepId) where.assignedRepId = assignedRepId;
-  if (status) where.status = status;
-
-  const [cases, total] = await Promise.all([
-    prisma.case.findMany({
-      where,
-      include: {
-        user: {
-          include: {
-            region: true,
-          },
+  const cases = await prisma.case.findMany({
+    include: {
+      user: {
+        include: {
+          region: true,
         },
-        opportunity: true,
-        assignedRep: true,
       },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.case.count({ where }),
-  ]);
+      opportunity: {
+        include: {
+          partner: true,
+        },
+      },
+      assignedRep: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-  return ctx.json(
-    ResponseBuilder.ok({
-      data: cases,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    }),
-  );
+  return ctx.json(ResponseBuilder.ok(cases));
 });
 
 CasesRoute.patch("/:id", authMiddleware, async (ctx) => {
@@ -156,6 +128,25 @@ CasesRoute.patch("/:id", authMiddleware, async (ctx) => {
   });
 
   return ctx.json(ResponseBuilder.ok(case_));
+});
+
+CasesRoute.delete("/:id", authMiddleware, async (ctx) => {
+  const id = ctx.req.param("id");
+
+  const existingCase = await prisma.case.findUnique({
+    where: { id },
+  });
+
+  if (!existingCase) {
+    const exception = HttpExceptionBuilder.notFound("Case not found");
+    return ctx.json(exception, 404);
+  }
+
+  await prisma.case.delete({
+    where: { id },
+  });
+
+  return ctx.json(ResponseBuilder.ok({ message: "Case deleted successfully" }));
 });
 
 CasesRoute.get("/:id/timeline", authMiddleware, async (ctx) => {

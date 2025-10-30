@@ -305,7 +305,9 @@ export default function CreateUserPage() {
               <Button
                 type="submit"
                 className="h-11 px-6"
-                disabled={createRepMutation.isPending || createPartnerMutation.isPending}
+                disabled={
+                  createRepMutation.isPending || createPartnerMutation.isPending
+                }
               >
                 Tạo người dùng
               </Button>

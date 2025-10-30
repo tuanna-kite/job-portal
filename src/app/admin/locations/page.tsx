@@ -83,7 +83,7 @@ export default function LocationAdminPage() {
   });
 
   const filteredRegions = regions.filter((r) =>
-    r.name.toLowerCase().includes(searchTerm.toLowerCase())
+    r.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const groupedByLevel = {
@@ -157,7 +157,9 @@ export default function LocationAdminPage() {
     setEditingRegion(region);
   };
 
-  const provinceRegions = regions.filter((r) => r.level === "province" || r.level === "municipality");
+  const provinceRegions = regions.filter(
+    (r) => r.level === "province" || r.level === "municipality",
+  );
 
   return (
     <div className="p-4 md:p-6">
@@ -174,19 +176,28 @@ export default function LocationAdminPage() {
       <div className="rounded-2xl border bg-white p-6">
         <div className="mb-4 flex gap-3 border-b">
           <button className="border-b-2 border-black px-4 pb-2 text-sm font-medium">
-            Tất cả <span className="ml-1 rounded bg-black px-2 py-0.5 text-xs text-white">{groupedByLevel.all}</span>
+            Tất cả{" "}
+            <span className="ml-1 rounded bg-black px-2 py-0.5 text-xs text-white">
+              {groupedByLevel.all}
+            </span>
           </button>
           <button className="px-4 pb-2 text-sm text-gray-600">
-            Xuất bản <span className="ml-1 rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">{groupedByLevel.province}</span>
+            Xuất bản{" "}
+            <span className="ml-1 rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">
+              {groupedByLevel.province}
+            </span>
           </button>
           <button className="px-4 pb-2 text-sm text-gray-600">
-            Nháp <span className="ml-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{groupedByLevel.district}</span>
+            Nháp{" "}
+            <span className="ml-1 rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+              {groupedByLevel.district}
+            </span>
           </button>
         </div>
 
         <div className="mb-4 flex items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               placeholder="Tìm kiếm..."
               value={searchTerm}
@@ -219,7 +230,10 @@ export default function LocationAdminPage() {
               <thead>
                 <tr className="border-b text-left text-sm text-gray-600">
                   <th className="pb-3 font-medium">
-                    <input type="checkbox" className="rounded border-gray-300" />
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300"
+                    />
                   </th>
                   <th className="pb-3 font-medium">ID</th>
                   <th className="pb-3 font-medium">Tên</th>
@@ -233,7 +247,10 @@ export default function LocationAdminPage() {
                 {filteredRegions.map((region) => (
                   <tr key={region.id} className="border-b last:border-0">
                     <td className="py-3">
-                      <input type="checkbox" className="rounded border-gray-300" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                      />
                     </td>
                     <td className="py-3 text-sm text-gray-600">
                       #{region.id.slice(0, 4)}
@@ -248,18 +265,25 @@ export default function LocationAdminPage() {
                       {region.parent?.name || "--"}
                     </td>
                     <td className="py-3 text-sm text-gray-600">
-                      12/01/2025<br />
+                      12/01/2025
+                      <br />
                       <span className="text-xs">09:00 am</span>
                     </td>
                     <td className="py-3 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <EllipsisVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditDialog(region)}>
+                          <DropdownMenuItem
+                            onClick={() => openEditDialog(region)}
+                          >
                             Sửa
                           </DropdownMenuItem>
                           <DropdownMenuItem
@@ -312,7 +336,10 @@ export default function LocationAdminPage() {
             <DialogTitle>Thêm khu vực</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleCreate)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -333,7 +360,10 @@ export default function LocationAdminPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cấp độ</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn cấp độ" />
@@ -343,7 +373,9 @@ export default function LocationAdminPage() {
                         <SelectItem value="province">Thành phố</SelectItem>
                         <SelectItem value="district">Quận/Huyện</SelectItem>
                         <SelectItem value="ward">Phường/Xã</SelectItem>
-                        <SelectItem value="municipality">Thành phố TW</SelectItem>
+                        <SelectItem value="municipality">
+                          Thành phố TW
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -393,13 +425,19 @@ export default function LocationAdminPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!editingRegion} onOpenChange={(open) => !open && setEditingRegion(null)}>
+      <Dialog
+        open={!!editingRegion}
+        onOpenChange={(open) => !open && setEditingRegion(null)}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Sửa khu vực</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleUpdate)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleUpdate)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -430,7 +468,9 @@ export default function LocationAdminPage() {
                         <SelectItem value="province">Thành phố</SelectItem>
                         <SelectItem value="district">Quận/Huyện</SelectItem>
                         <SelectItem value="ward">Phường/Xã</SelectItem>
-                        <SelectItem value="municipality">Thành phố TW</SelectItem>
+                        <SelectItem value="municipality">
+                          Thành phố TW
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -480,13 +520,17 @@ export default function LocationAdminPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+      <Dialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+      >
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>Xác nhận xóa</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-600">
-            Bạn có chắc chắn muốn xóa khu vực này không? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa khu vực này không? Hành động này không thể
+            hoàn tác.
           </p>
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDeleteConfirm(null)}>

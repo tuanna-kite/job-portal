@@ -17,4 +17,25 @@ export class OpportunitiesController {
     const jobs = await this.service.findAll();
     return ctx.json(ResponseBuilder.ok(jobs));
   };
+
+  findById = async (ctx: Context) => {
+    const { id } = ctx.req.param();
+    const job = await this.service.findById(id);
+    return ctx.json(ResponseBuilder.ok(job));
+  };
+
+  update = async (ctx: Context) => {
+    const { id } = ctx.req.param();
+    const dto = await ctx.req.json();
+    const updatedOpp = await this.service.update(id, dto);
+    return ctx.json(ResponseBuilder.ok(updatedOpp));
+  };
+
+  delete = async (ctx: Context) => {
+    const { id } = ctx.req.param();
+    await this.service.delete(id);
+    return ctx.json(
+      ResponseBuilder.ok({ message: "Opportunity deleted successfully" }),
+    );
+  };
 }

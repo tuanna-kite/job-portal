@@ -21,12 +21,20 @@ export type User = {
   updatedAt: string;
 };
 
-export function useUsers(filters?: { page?: number; limit?: number; search?: string }) {
+export function useUsers(filters?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   return useQuery({
     queryKey: qk.users(filters),
     queryFn: () =>
       apiFetch<User[]>("/users", {
-        query: { page: filters?.page ?? 1, limit: filters?.limit ?? 10, search: filters?.search },
+        query: {
+          page: filters?.page ?? 1,
+          limit: filters?.limit ?? 10,
+          search: filters?.search,
+        },
       }),
     select: (res) => ({ items: res.data, pagination: res.pagination }),
   });

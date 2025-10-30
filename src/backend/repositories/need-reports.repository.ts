@@ -20,6 +20,15 @@ export class NeedReportsRepository {
 
   constructor(private db: PrismaTx = prisma) {}
 
+  findAll() {
+    return this.db.needReport.findMany({
+      include: this.fullInclude,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
   createReport(input: CreateReportByUserInput) {
     return this.db.needReport.create({ data: input });
   }
@@ -28,6 +37,27 @@ export class NeedReportsRepository {
     return this.db.needReport.findUnique({
       where: { id },
       include: this.fullInclude,
+    });
+  }
+
+  async update(
+    id: string,
+    data: {
+      status?: string;
+      assignedToId?: string | null;
+      description?: string;
+    },
+  ) {
+    return this.db.needReport.update({
+      where: { id },
+      data,
+      include: this.fullInclude,
+    });
+  }
+
+  async delete(id: string) {
+    return this.db.needReport.delete({
+      where: { id },
     });
   }
 }

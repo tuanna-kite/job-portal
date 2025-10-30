@@ -39,7 +39,11 @@ export default function UserAdminPage() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
 
-  const { data, isLoading } = useUsers({ page, limit, search: debouncedSearch || undefined });
+  const { data, isLoading } = useUsers({
+    page,
+    limit,
+    search: debouncedSearch || undefined,
+  });
   const rows = useMemo<UserRow[]>(() => {
     return (data?.items || []).map((u) => ({
       id: u.id ? `#${u.id.slice(0, 4)}` : "--",
@@ -48,7 +52,12 @@ export default function UserAdminPage() {
       phone: u.phone,
       role: (u as any)?.role || "Người dùng",
       region: (u as any)?.region?.name || "",
-      status: u.status === "archived" ? "banned" : u.status === "active" ? "active" : u.status ?? "pending",
+      status:
+        u.status === "archived"
+          ? "banned"
+          : u.status === "active"
+            ? "active"
+            : (u.status ?? "pending"),
     }));
   }, [data]);
 
@@ -73,7 +82,9 @@ export default function UserAdminPage() {
         </button>
         <div className="ml-auto">
           <Link href="/admin/users/new">
-            <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Thêm người dùng</Button>
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" /> Thêm người dùng
+            </Button>
           </Link>
         </div>
       </div>
@@ -94,7 +105,12 @@ export default function UserAdminPage() {
 
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <Input placeholder="Tìm kiếm..." className="h-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input
+                placeholder="Tìm kiếm..."
+                className="h-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="h-10 w-10">
@@ -122,7 +138,11 @@ export default function UserAdminPage() {
         </div>
 
         {/* Results summary chips */}
-        <div className="mt-3 text-sm text-gray-600">{isLoading ? "Đang tải..." : `${data?.pagination?.totalItems ?? 0} kết quả được tìm thấy`}</div>
+        <div className="mt-3 text-sm text-gray-600">
+          {isLoading
+            ? "Đang tải..."
+            : `${data?.pagination?.totalItems ?? 0} kết quả được tìm thấy`}
+        </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
           <div>Vai trò: Đại diện khu vực</div>
           <div>Từ khóa: Keyword</div>
@@ -213,10 +233,22 @@ export default function UserAdminPage() {
               : `${(data?.pagination?.page ?? 1) * (data?.pagination?.limit ?? limit) - (data?.pagination?.limit ?? limit) + 1}-${Math.min((data?.pagination?.page ?? 1) * (data?.pagination?.limit ?? limit), data?.pagination?.totalItems ?? 0)} của ${data?.pagination?.totalItems ?? 0}`}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
               ‹
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => (data?.pagination?.hasNextPage ? p + 1 : p))} disabled={!data?.pagination?.hasNextPage}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setPage((p) => (data?.pagination?.hasNextPage ? p + 1 : p))
+              }
+              disabled={!data?.pagination?.hasNextPage}
+            >
               ›
             </Button>
           </div>
@@ -229,13 +261,19 @@ export default function UserAdminPage() {
 function TableRowStatusCell({ status }: { status: string }) {
   if (status === "active")
     return (
-      <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">Hoạt động</span>
+      <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+        Hoạt động
+      </span>
     );
   if (status === "banned" || status === "archived")
     return (
-      <span className="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">Bị cấm</span>
+      <span className="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">
+        Bị cấm
+      </span>
     );
   return (
-    <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">Chờ duyệt</span>
+    <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
+      Chờ duyệt
+    </span>
   );
 }
