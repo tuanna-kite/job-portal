@@ -1,5 +1,6 @@
 import { prisma } from "@/backend/db";
 import { AppError } from "@/backend/errors/app-error";
+import { CasesRepository } from "@/backend/repositories/cases.repository";
 import { NeedReportsRepository } from "@/backend/repositories/need-reports.repository";
 import { RegionsRepository } from "@/backend/repositories/regions.repository";
 import { UsersRepository } from "@/backend/repositories/users.repository";
@@ -56,7 +57,20 @@ export class NeedSupportsService {
         category: dto.category,
       });
 
-      return { reportId: report.id };
+      // Auto-create Case if category is JOB_SEEKING
+      let caseId: string | undefined;
+      if (dto.category === "JOB_SEEKING") {
+        const casesRepo = new CasesRepository(tx);
+        const newCase = await casesRepo.create({
+          userId: user.id,
+          needReportId: report.id,
+          status: "pending",
+          notes: `Tự động tạo từ yêu cầu hỗ trợ: ${dto.description.substring(0, 100)}`,
+        });
+        caseId = newCase.id;
+      }
+
+      return { reportId: report.id, caseId };
     });
   }
 

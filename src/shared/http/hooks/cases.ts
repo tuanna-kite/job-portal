@@ -19,19 +19,25 @@ export type Case = {
     phone?: string | null;
     cccd?: string | null;
   };
-  opportunityId: string;
+  opportunityId?: string | null;
   opportunity?: {
     id: string;
     title: string;
     partner?: {
       email: string;
     };
-  };
+  } | null;
   assignedRepId?: string | null;
   assignedRep?: {
     id: string;
     fullName: string;
     email: string;
+  } | null;
+  needReportId?: string | null;
+  needReport?: {
+    id: string;
+    category: string;
+    description: string;
   } | null;
   status: CaseStatus;
   notes?: string | null;
@@ -41,7 +47,7 @@ export type Case = {
 
 export type CreateCaseDto = {
   userId: string;
-  opportunityId: string;
+  opportunityId?: string;
   assignedRepId?: string;
   status?: Case["status"];
   notes?: string;
@@ -51,6 +57,13 @@ export type UpdateCaseDto = {
   assignedRepId?: string | null;
   status?: Case["status"];
   notes?: string | null;
+};
+
+export type CreateCaseFromNeedReportDto = {
+  needReportId: string;
+  opportunityId: string;
+  assignedRepId?: string;
+  notes?: string;
 };
 
 export type CaseTimelineEvent = {
@@ -75,6 +88,18 @@ export function useCreateCase() {
       apiFetch<Case>("/cases", { method: "POST", body: dto }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cases"] });
+    },
+  });
+}
+
+export function useCreateCaseFromNeedReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: CreateCaseFromNeedReportDto) =>
+      apiFetch<Case>("/cases/from-need-report", { method: "POST", body: dto }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      qc.invalidateQueries({ queryKey: ["need-reports"] });
     },
   });
 }

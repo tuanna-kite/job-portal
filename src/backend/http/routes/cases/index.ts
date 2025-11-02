@@ -1,16 +1,35 @@
-import { Hono } from "hono";
-
 import { prisma } from "@/backend/db";
 import { HttpExceptionBuilder } from "@/backend/http/builder/http-exception-builder";
 import { ResponseBuilder } from "@/backend/http/builder/response-builder";
 import { authMiddleware } from "@/backend/http/middlewares/auth.middleware";
+import { CasesService } from "@/backend/services/cases.service";
 
 import type { CreateCaseDto } from "@/shared/validation/cases/create-case.schema";
 import type { UpdateCaseDto } from "@/shared/validation/cases/update-case.schema";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 
-const CasesRoute = new Hono();
+function registerCasesRoute(app: OpenAPIHono) {
+  const casesService = new CasesService();
 
-CasesRoute.post("/", authMiddleware, async (ctx) => {
+  // Create case from need report
+  app.post("/cases/from-need-report", authMiddleware, async (ctx) => {
+    try {
+      const body = await ctx.req.json<{
+        needReportId: string;
+        opportunityId: string;
+        assignedRepId?: string;
+        notes?: string;
+      }>();
+
+      const newCase = await casesService.createFromNeedReport(body);
+      return ctx.json(ResponseBuilder.ok(newCase), 201);
+    } catch (error: any) {
+      const exception = HttpExceptionBuilder.fromError(error);
+      return ctx.json(exception, exception.statusCode);
+    }
+  });
+
+  app.post("/cases", authMiddleware, async (ctx) => {
   const dto = await ctx.req.json<CreateCaseDto>();
 
   const user = await prisma.user.findUnique({
@@ -62,7 +81,7 @@ CasesRoute.post("/", authMiddleware, async (ctx) => {
   return ctx.json(ResponseBuilder.ok(case_));
 });
 
-CasesRoute.get("/", authMiddleware, async (ctx) => {
+app.get("/cases", authMiddleware, async (ctx) => {
   const cases = await prisma.case.findMany({
     include: {
       user: {
@@ -83,7 +102,7 @@ CasesRoute.get("/", authMiddleware, async (ctx) => {
   return ctx.json(ResponseBuilder.ok(cases));
 });
 
-CasesRoute.patch("/:id", authMiddleware, async (ctx) => {
+app.patch("/cases/:id", authMiddleware, async (ctx) => {
   const id = ctx.req.param("id");
   const dto = await ctx.req.json<UpdateCaseDto>();
 
@@ -130,7 +149,7 @@ CasesRoute.patch("/:id", authMiddleware, async (ctx) => {
   return ctx.json(ResponseBuilder.ok(case_));
 });
 
-CasesRoute.delete("/:id", authMiddleware, async (ctx) => {
+app.delete("/cases/:id", authMiddleware, async (ctx) => {
   const id = ctx.req.param("id");
 
   const existingCase = await prisma.case.findUnique({
@@ -149,7 +168,7 @@ CasesRoute.delete("/:id", authMiddleware, async (ctx) => {
   return ctx.json(ResponseBuilder.ok({ message: "Case deleted successfully" }));
 });
 
-CasesRoute.get("/:id/timeline", authMiddleware, async (ctx) => {
+app.get("/cases/:id/timeline", authMiddleware, async (ctx) => {
   const id = ctx.req.param("id");
 
   const case_ = await prisma.case.findUnique({
@@ -183,5 +202,6 @@ CasesRoute.get("/:id/timeline", authMiddleware, async (ctx) => {
 
   return ctx.json(ResponseBuilder.ok(timeline));
 });
+}
 
-export default CasesRoute;
+export default registerCasesRoute;

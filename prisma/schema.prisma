@@ -244,12 +244,15 @@ model Case {
   user          User            @relation(fields: [userId], references: [id])
   status        CaseStatus      @default(pending)
   notes         String?
-  // Opportunity: 1-n
-  opportunityId String          @db.Uuid
-  opportunity   Opportunity     @relation(fields: [opportunityId], references: [id])
+  // Opportunity: 1-n (optional - can be null when auto-created from user)
+  opportunityId String?         @db.Uuid
+  opportunity   Opportunity?    @relation(fields: [opportunityId], references: [id])
   // Rep: 1-n
   assignedRepId String?         @db.Uuid
   assignedRep   Representative? @relation(fields: [assignedRepId], references: [id])
+  // NeedReport: 1-1 (optional) - Link to the support request that created this case
+  needReportId  String?         @unique @db.Uuid
+  needReport    NeedReport?     @relation(fields: [needReportId], references: [id])
   // Timestamp
   createdAt     DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
@@ -257,6 +260,7 @@ model Case {
   @@index([userId])
   @@index([opportunityId])
   @@index([assignedRepId])
+  @@index([needReportId])
   @@map("cases")
 }
 
@@ -273,6 +277,8 @@ model NeedReport {
   // Nguoi xu ly
   assignedToId String?             @db.Uuid
   assignedTo   Representative?     @relation(fields: [assignedToId], references: [id])
+  // Case relationship - if this support request was converted to a case
+  case         Case?
   // Timestamp
   createdAt    DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime            @default(now()) @updatedAt @db.Timestamptz(6)

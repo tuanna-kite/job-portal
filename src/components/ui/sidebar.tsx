@@ -8,7 +8,6 @@ import {
   Briefcase,
   FolderOpen,
   MessageText1,
-  Profile,
 } from "iconsax-react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -98,17 +97,6 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           },
         ],
       },
-      {
-        section: "CÀI ĐẶT",
-        items: [
-          {
-            id: "account",
-            label: "Tài khoản",
-            icon: Profile,
-            href: "/admin/account",
-          },
-        ],
-      },
     ];
 
     const handleNavigation = (href: string, itemId: string) => {
@@ -182,9 +170,10 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
             <Image
               src={logoMini}
               alt="Logo"
-              width={80}
+              width={176}
               height={40}
               className="w-44 cursor-pointer"
+              onClick={() => router.push("/")}
             />
             <Button
               variant="ghost"

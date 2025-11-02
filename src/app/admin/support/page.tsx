@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -26,6 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateCaseFromNeedReport } from "@/shared/http/hooks/cases";
+import { useOpportunities } from "@/shared/http/hooks/opportunities";
 import {
   type NeedReport,
   type NeedReportStatus,
@@ -35,6 +39,7 @@ import {
   useNeedReports,
   useUpdateNeedReport,
 } from "@/shared/http/hooks/reports";
+import { useReps } from "@/shared/http/hooks/reps";
 
 const CATEGORY_LABELS: Record<NeedSupportCategory, string> = {
   JOB_SEEKING: "Hỗ trợ việc làm",
@@ -69,10 +74,20 @@ export default function SupportAdminPage() {
   const [editingReport, setEditingReport] = useState<NeedReport | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [editStatus, setEditStatus] = useState<NeedReportStatus>("open");
+  const [createCaseReport, setCreateCaseReport] = useState<NeedReport | null>(
+    null,
+  );
+  const [selectedOpportunityId, setSelectedOpportunityId] = useState("");
+  const [selectedRepId, setSelectedRepId] = useState("");
+  const [caseNotes, setCaseNotes] = useState("");
 
   const { data: reports = [], isLoading } = useNeedReports();
+  const { data: opportunities = [] } = useOpportunities();
+  const { data: repsData } = useReps();
+  const reps = repsData?.items || [];
   const updateMutation = useUpdateNeedReport();
   const deleteMutation = useDeleteNeedReport();
+  const createCaseMutation = useCreateCaseFromNeedReport();
 
   const filteredReports = reports.filter((report) => {
     const matchSearch =
@@ -120,6 +135,34 @@ export default function SupportAdminPage() {
   const openEditDialog = (report: NeedReport) => {
     setEditingReport(report);
     setEditStatus(report.status);
+  };
+
+  const openCreateCaseDialog = (report: NeedReport) => {
+    setCreateCaseReport(report);
+    setSelectedOpportunityId("");
+    setSelectedRepId("");
+    setCaseNotes("");
+  };
+
+  const handleCreateCase = async () => {
+    if (!createCaseReport || !selectedOpportunityId) {
+      toast.error("Vui lòng chọn việc làm");
+      return;
+    }
+
+    try {
+      await createCaseMutation.mutateAsync({
+        needReportId: createCaseReport.id,
+        opportunityId: selectedOpportunityId,
+        assignedRepId: selectedRepId || undefined,
+        notes: caseNotes || undefined,
+      });
+      toast.success("Tạo hồ sơ thành công");
+      setCreateCaseReport(null);
+    } catch (e: unknown) {
+      const error = e as { message?: string };
+      toast.error(error?.message || "Tạo hồ sơ thất bại");
+    }
   };
 
   return (
@@ -325,6 +368,16 @@ export default function SupportAdminPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {report.category === "JOB_SEEKING" &&
+                              report.status !== "resolved" &&
+                              !report.case && (
+                                <DropdownMenuItem
+                                  onClick={() => openCreateCaseDialog(report)}
+                                  className="text-green-600"
+                                >
+                                  Tạo hồ sơ
+                                </DropdownMenuItem>
+                              )}
                             <DropdownMenuItem
                               onClick={() => openEditDialog(report)}
                             >
@@ -442,6 +495,105 @@ export default function SupportAdminPage() {
             >
               Xóa
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!createCaseReport}
+        onOpenChange={(open) => !open && setCreateCaseReport(null)}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Tạo hồ sơ ứng tuyển</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {createCaseReport && (
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="mb-2 text-sm font-medium text-gray-700">
+                  Thông tin người dùng
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    <span className="text-gray-600">Họ tên: </span>
+                    <span className="font-medium">
+                      {createCaseReport.user?.fullName}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Mô tả nhu cầu: </span>
+                    <span className="text-gray-700">
+                      {createCaseReport.description}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="opportunityId">
+                Việc làm <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={selectedOpportunityId}
+                onValueChange={setSelectedOpportunityId}
+              >
+                <SelectTrigger id="opportunityId" className="mt-2">
+                  <SelectValue placeholder="Chọn việc làm phù hợp" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {opportunities.map((opp) => (
+                    <SelectItem key={opp.id} value={opp.id}>
+                      {opp.title} - {opp.partner?.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="repId">Đại diện phụ trách (tùy chọn)</Label>
+              <Select value={selectedRepId} onValueChange={setSelectedRepId}>
+                <SelectTrigger id="repId" className="mt-2">
+                  <SelectValue placeholder="Chọn đại diện" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  <SelectItem value="">Không chọn</SelectItem>
+                  {reps.map((rep) => (
+                    <SelectItem key={rep.id} value={rep.id}>
+                      {rep.fullName} - {rep.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="notes">Ghi chú (tùy chọn)</Label>
+              <Textarea
+                id="notes"
+                value={caseNotes}
+                onChange={(e) => setCaseNotes(e.target.value)}
+                placeholder="Thêm ghi chú cho hồ sơ này..."
+                rows={3}
+                className="mt-2"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setCreateCaseReport(null)}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleCreateCase}
+                disabled={createCaseMutation.isPending || !selectedOpportunityId}
+              >
+                {createCaseMutation.isPending ? "Đang tạo..." : "Tạo hồ sơ"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

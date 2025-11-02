@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, Send } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -125,22 +125,40 @@ export default function SessionContentConnect() {
     },
   });
 
+  const [cccdToCheck, setCccdToCheck] = useState<string | null>(null);
+  
   const { data: existingUser, isLoading: isLoadingUser } = useUserByCccd(
-    step === 2 ? cccdForm.getValues("cccd") : null,
+    cccdToCheck,
   );
 
   const createReportMutation = useCreateReportByUser();
   const { data: regions = [] } = useRegions();
 
-  const onCccdSubmit = (data: CccdFormValues) => {
-    if (existingUser) {
-      setIsExistingUser(true);
-      setUserData(existingUser);
-    } else {
-      setIsExistingUser(false);
-    }
-    setStep(2);
+  const onCccdSubmit = async (data: CccdFormValues) => {
+    // Trigger query để check user
+    setCccdToCheck(data.cccd);
+    
+    // Đợi query hoàn thành
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    
+    // Sau khi query xong, check kết quả
+    // Note: existingUser sẽ được update bởi useUserByCccd hook
   };
+
+  // Effect để handle khi existingUser được load
+  useEffect(() => {
+    if (cccdToCheck && !isLoadingUser) {
+      if (existingUser) {
+        setIsExistingUser(true);
+        setUserData(existingUser);
+      } else {
+        setIsExistingUser(false);
+        setUserData(null);
+      }
+      setStep(2);
+      setCccdToCheck(null); // Reset
+    }
+  }, [existingUser, isLoadingUser, cccdToCheck]);
 
   const handleFileUploadComplete = (url: string, key: string) => {
     const currentAttachments = needReportForm.getValues("attachments") || [];

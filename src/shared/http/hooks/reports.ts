@@ -36,6 +36,10 @@ export type NeedReport = {
     fullName: string;
     email: string;
   } | null;
+  case?: {
+    id: string;
+    status: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 };

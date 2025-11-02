@@ -5,10 +5,11 @@ import type { CaseStatus } from "@prisma/client";
 
 type CreateCaseInput = {
   userId: string;
-  opportunityId: string;
+  opportunityId?: string;
   assignedRepId?: string;
   status?: CaseStatus;
   notes?: string;
+  needReportId?: string;
 };
 
 type UpdateCaseInput = {
@@ -30,6 +31,7 @@ export class CasesRepository {
           },
         },
         assignedRep: true,
+        needReport: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -48,6 +50,7 @@ export class CasesRepository {
           },
         },
         assignedRep: true,
+        needReport: true,
       },
     });
   }
@@ -63,6 +66,7 @@ export class CasesRepository {
           },
         },
         assignedRep: true,
+        needReport: true,
       },
     });
   }
@@ -79,6 +83,7 @@ export class CasesRepository {
           },
         },
         assignedRep: true,
+        needReport: true,
       },
     });
   }

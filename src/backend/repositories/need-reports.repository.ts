@@ -16,6 +16,7 @@ export class NeedReportsRepository {
   private fullInclude = Prisma.validator<Prisma.NeedReportInclude>()({
     user: {},
     assignedTo: {},
+    case: true,
   } as const);
 
   constructor(private db: PrismaTx = prisma) {}

@@ -70,7 +70,7 @@ const STATUS_COLORS: Record<CaseStatus, string> = {
 
 const caseSchema = z.object({
   userId: z.string().min(1, "Vui lòng chọn người dùng"),
-  opportunityId: z.string().min(1, "Vui lòng chọn việc làm"),
+  opportunityId: z.string().optional(),
   assignedRepId: z.string().optional(),
   status: z
     .enum(["pending", "in_progress", "matched", "rejected", "done"] as const)
@@ -184,7 +184,7 @@ export default function ProfileAdminPage() {
   const openEditDialog = (caseRecord: Case) => {
     form.reset({
       userId: caseRecord.userId,
-      opportunityId: caseRecord.opportunityId,
+      opportunityId: caseRecord.opportunityId || "",
       assignedRepId: caseRecord.assignedRepId || "",
       status: caseRecord.status,
       notes: caseRecord.notes || "",
@@ -299,10 +299,49 @@ export default function ProfileAdminPage() {
                       </Link>
                     </td>
                     <td className="py-3 text-sm font-medium">
-                      {caseRecord.user?.fullName || "N/A"}
+                      <div className="flex flex-col gap-1">
+                        <span>{caseRecord.user?.fullName || "N/A"}</span>
+                        {caseRecord.needReportId && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                            <svg
+                              className="h-3 w-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
+                            </svg>
+                            Từ yêu cầu hỗ trợ
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 text-sm text-gray-600">
-                      {caseRecord.opportunity?.title || "N/A"}
+                      {caseRecord.opportunity?.title ? (
+                        caseRecord.opportunity.title
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs text-amber-700">
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                            />
+                          </svg>
+                          Chưa gán việc làm
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 text-sm text-gray-600">
                       {caseRecord.assignedRep?.fullName || "Tên đại diện"}
@@ -432,14 +471,15 @@ export default function ProfileAdminPage() {
                 name="opportunityId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Việc làm</FormLabel>
+                    <FormLabel>Việc làm (tùy chọn)</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Chọn việc làm" />
+                          <SelectValue placeholder="Chọn việc làm hoặc để trống" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-80">
+                        <SelectItem value="">Không chọn</SelectItem>
                         {opportunities.map((opp) => (
                           <SelectItem key={opp.id} value={opp.id}>
                             {opp.title}
