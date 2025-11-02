@@ -22,7 +22,15 @@ const adminData: Prisma.AdminCreateInput[] = [
 
 export async function main() {
   for (const u of adminData) {
-    await prisma.admin.create({ data: u });
+    await prisma.admin.upsert({
+      where: { email: u.email },
+      update: {
+        fullName: u.fullName,
+        password: u.password,
+        role: u.role,
+      },
+      create: u,
+    });
   }
 }
 

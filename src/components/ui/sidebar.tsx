@@ -15,6 +15,7 @@ import { useRouter, usePathname } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { logoMini } from "@/contants/images";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -25,10 +26,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
-  (
-    { className, activeTab, onTabChange, isOpen = true, onToggle, ...props },
-    ref,
-  ) => {
+  ({ className, onTabChange, isOpen = true, onToggle, ...props }, ref) => {
     const router = useRouter();
     const pathname = usePathname();
     const [isMobile, setIsMobile] = React.useState(false);
@@ -182,11 +180,11 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           {/* Header with Toggle Button */}
           <div className="flex h-16 items-center justify-between border-b border-gray-200 px-6">
             <Image
-              src="/logo-app.png"
+              src={logoMini}
               alt="Logo"
               width={80}
               height={40}
-              className="cursor-pointer"
+              className="w-44 cursor-pointer"
             />
             <Button
               variant="ghost"
