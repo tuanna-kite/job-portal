@@ -7,7 +7,7 @@ const listOpportunitiesRoute = createRoute({
   summary: "",
   request: {},
   responses: {
-    201: { description: "OK" },
+    200: { description: "OK" },
   },
 });
 

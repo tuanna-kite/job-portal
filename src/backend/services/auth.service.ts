@@ -111,7 +111,7 @@ export class AuthService {
     // Verify old password
     const verify = await HashingHelper.verify(dto.oldPassword, admin.password);
     if (!verify) {
-      throw new AppError("BAD_REQUEST", "Mật khẩu cũ không đúng");
+      throw new AppError("INVALID_STATE", "Mật khẩu cũ không đúng");
     }
 
     // Hash new password

@@ -24,8 +24,9 @@ function registerCasesRoute(app: OpenAPIHono) {
       const newCase = await casesService.createFromNeedReport(body);
       return ctx.json(ResponseBuilder.ok(newCase), 201);
     } catch (error: any) {
-      const exception = HttpExceptionBuilder.fromError(error);
-      return ctx.json(exception, exception.statusCode);
+      // Fallback mapping for unexpected errors
+      const exception = HttpExceptionBuilder.internal();
+      return ctx.json(exception, { status: exception.statusCode as any });
     }
   });
 
@@ -190,7 +191,7 @@ app.get("/cases/:id/timeline", authMiddleware, async (ctx) => {
       id: "created",
       action: "Case created",
       timestamp: case_.createdAt,
-      details: `Case created for user ${case_.user.fullName} with opportunity ${case_.opportunity.title}`,
+      details: `Case created for user ${case_.user.fullName} with opportunity ${case_.opportunity?.title ?? "N/A"}`,
     },
     {
       id: "updated",

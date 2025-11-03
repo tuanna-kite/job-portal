@@ -5,8 +5,8 @@ import { authMiddleware } from "@/backend/http/middlewares/auth.middleware";
 import { changePasswordDtoSchema } from "@/shared/validation/auth/change-password-dto.schema";
 import { updateProfileDtoSchema } from "@/shared/validation/auth/update-profile-dto.schema";
 
-import type { Env } from "@/backend/types/hono-env";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { Env } from "hono";
 
 const controller = new AuthController();
 

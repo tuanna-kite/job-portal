@@ -4,6 +4,7 @@ import { prisma } from "@/backend/db";
 
 import type { PrismaTx } from "@/backend/types/type";
 import type { NeedReportCategory } from "@/shared/domains/reports/need-report-category.enum";
+import type { NeedReportStatus } from "@prisma/client";
 
 type CreateReportByUserInput = {
   userId: string;
@@ -44,14 +45,28 @@ export class NeedReportsRepository {
   async update(
     id: string,
     data: {
-      status?: string;
+      status?: NeedReportStatus;
       assignedToId?: string | null;
       description?: string;
     },
   ) {
+    const updateData: Prisma.NeedReportUpdateInput = {
+      ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.description !== undefined
+        ? { description: data.description }
+        : {}),
+      ...(data.assignedToId !== undefined
+        ? {
+            assignedTo: data.assignedToId
+              ? { connect: { id: data.assignedToId } }
+              : { disconnect: true },
+          }
+        : {}),
+    };
+
     return this.db.needReport.update({
       where: { id },
-      data,
+      data: updateData,
       include: this.fullInclude,
     });
   }

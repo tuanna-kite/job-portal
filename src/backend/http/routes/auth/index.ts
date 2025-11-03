@@ -4,8 +4,8 @@ import loginRoute from "@/backend/http/routes/auth/login.route";
 import { registerProfileRoutes } from "@/backend/http/routes/auth/profile.route";
 import registerRoute from "@/backend/http/routes/auth/register.route";
 
-import type { Env } from "@/backend/types/hono-env";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { Env } from "hono";
 
 function registerAuthRoute(app: OpenAPIHono<Env>) {
   const authController = new AuthController();

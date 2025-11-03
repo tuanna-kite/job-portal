@@ -99,7 +99,7 @@ export class CasesService {
     );
     if (alreadyConverted) {
       throw new AppError(
-        "BAD_REQUEST",
+        "INVALID_STATE",
         "This support request has already been converted to a case",
       );
     }

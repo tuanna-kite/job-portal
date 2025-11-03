@@ -8,7 +8,7 @@ export const ourFileRouter = {
       return { url: file.url, key: file.key };
     },
   ),
-  avatar: f({ image: { maxFileSize: "3MB" } }).onUploadComplete(
+  avatar: f({ image: { maxFileSize: "4MB" } }).onUploadComplete(
     async ({ file }) => {
       return { url: file.url, key: file.key };
     },

@@ -7,10 +7,11 @@ import { UsersRepository } from "@/backend/repositories/users.repository";
 
 import type { NeedReportCategory } from "@/shared/domains/reports/need-report-category.enum";
 import type { NeedReportCreatedBy } from "@/shared/domains/reports/need-report-created-by.enum";
-import type { NeedReportStatus } from "@/shared/domains/reports/need-report-status.enum";
+import type { NeedReportStatus as DomainNeedReportStatus } from "@/shared/domains/reports/need-report-status.enum";
 import type { CreateReportByUserDto } from "@/shared/validation/reports/create-report-by-user.schema";
 import type { NeedReportDetailSchema } from "@/shared/validation/reports/get-report-detail.schema";
 import type { z } from "@hono/zod-openapi";
+import type { NeedReportStatus as PrismaNeedReportStatus } from "@prisma/client";
 
 export class NeedSupportsService {
   constructor(private repo = new NeedReportsRepository()) {}
@@ -87,7 +88,7 @@ export class NeedSupportsService {
     }
     return {
       ...report,
-      status: report.status as NeedReportStatus,
+      status: report.status as DomainNeedReportStatus,
       category: report.category as NeedReportCategory,
       createdBy: report.createdBy as NeedReportCreatedBy,
       createdAt: report.createdAt.toISOString(),
@@ -114,7 +115,7 @@ export class NeedSupportsService {
   async update(
     id: string,
     dto: {
-      status?: string;
+      status?: PrismaNeedReportStatus;
       assignedToId?: string | null;
       description?: string;
     },

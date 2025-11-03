@@ -28,7 +28,7 @@ export class OpportunitiesController {
     const { id } = ctx.req.param();
     const dto = await ctx.req.json();
     const updatedOpp = await this.service.update(id, dto);
-    return ctx.json(ResponseBuilder.ok(updatedOpp));
+    return ctx.json(ResponseBuilder.ok(updatedOpp), 200);
   };
 
   delete = async (ctx: Context) => {
@@ -36,6 +36,7 @@ export class OpportunitiesController {
     await this.service.delete(id);
     return ctx.json(
       ResponseBuilder.ok({ message: "Opportunity deleted successfully" }),
+      200,
     );
   };
 }
