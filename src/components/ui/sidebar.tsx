@@ -18,7 +18,6 @@ import { logoMini } from "@/contants/images";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  activeTab?: string;
   onTabChange?: (tab: string) => void;
   isOpen?: boolean;
   onToggle?: () => void;

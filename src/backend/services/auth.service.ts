@@ -7,8 +7,10 @@ import { AdminRepository } from "@/backend/repositories/admin.repository";
 import { RepsRepository } from "@/backend/repositories/reps.repository";
 import { AdminRole } from "@/shared/domains/admins/admin-role.enum";
 
+import type { ChangePasswordDto } from "@/shared/validation/auth/change-password-dto.schema";
 import type { LoginDto } from "@/shared/validation/auth/login-dto.schema";
 import type { RegisterDto } from "@/shared/validation/auth/register-dto.schema";
+import type { UpdateProfileDto } from "@/shared/validation/auth/update-profile-dto.schema";
 
 export class AuthService {
   constructor(
@@ -77,5 +79,45 @@ export class AuthService {
         }
         throw err;
       });
+  }
+
+  public async getProfile(adminId: string) {
+    const admin = await this.adminRepo.findById(adminId);
+    if (!admin) {
+      throw new AppError("NOT_FOUND", "Admin not found");
+    }
+    return admin;
+  }
+
+  public async updateProfile(adminId: string, dto: UpdateProfileDto) {
+    const admin = await this.adminRepo.findById(adminId);
+    if (!admin) {
+      throw new AppError("NOT_FOUND", "Admin not found");
+    }
+
+    return this.adminRepo.updateProfile(adminId, {
+      fullName: dto.fullName,
+      phone: dto.phone,
+      avatar: dto.avatar,
+    });
+  }
+
+  public async changePassword(adminId: string, dto: ChangePasswordDto) {
+    const admin = await this.adminRepo.findByIdWithPassword(adminId);
+    if (!admin) {
+      throw new AppError("NOT_FOUND", "Admin not found");
+    }
+
+    // Verify old password
+    const verify = await HashingHelper.verify(dto.oldPassword, admin.password);
+    if (!verify) {
+      throw new AppError("BAD_REQUEST", "Mật khẩu cũ không đúng");
+    }
+
+    // Hash new password
+    const hashedPassword = await HashingHelper.hash(dto.newPassword);
+    await this.adminRepo.updatePassword(adminId, hashedPassword);
+
+    return { message: "Đổi mật khẩu thành công" };
   }
 }

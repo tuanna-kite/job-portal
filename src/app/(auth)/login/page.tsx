@@ -8,9 +8,11 @@ import { useForm } from "react-hook-form";
 import LoginForm from "@/components/forms/LoginForm";
 import { logoMini } from "@/contants/images";
 import { useLogin } from "@/shared/http/hooks/auth";
+import { useAuthStore } from "@/store/auth";
 
 function LoginPage() {
   const router = useRouter();
+  const { setUser, setEmail, isAuthenticated } = useAuthStore();
   const form = useForm<any>({
     mode: "onChange", // Validate on blur for better UX
     reValidateMode: "onChange", // Re-validate on change after first validation
@@ -21,12 +23,21 @@ function LoginPage() {
   });
   const loginMutation = useLogin();
 
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/admin");
+    }
+  }, [isAuthenticated, router]);
+
   const onSubmit = async (values: { email: string; password: string }) => {
     try {
-      await loginMutation.mutateAsync(values);
-      // Persist minimal auth flag; backend sets HttpOnly cookie
-      localStorage.setItem("isAdminAuthenticated", "true");
-      localStorage.setItem("adminEmail", values.email);
+      const response = await loginMutation.mutateAsync(values);
+      
+      // Persist auth state using Zustand
+      setEmail(values.email);
+      setUser({ email: values.email });
+      
       router.replace("/admin");
     } catch (e) {
       // no-op: LoginForm should show error if it handles it; otherwise you can add a toast here

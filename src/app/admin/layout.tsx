@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Sidebar } from "@/components/ui/sidebar";
+import { useAuthStore } from "@/store/auth";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -13,7 +14,18 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false); // Start closed on mobile
+  const [isChecking, setIsChecking] = React.useState(true);
+
+  // Auth guard: redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/login");
+    } else {
+      setIsChecking(false);
+    }
+  }, [isAuthenticated, router]);
 
   // Set initial sidebar state based on screen size
   React.useEffect(() => {
@@ -29,6 +41,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Show loading while checking auth
+  if (isChecking) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-[#5B4DFF]"></div>
+          <p className="mt-4 text-gray-600">Đang kiểm tra...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render admin layout if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const getActiveTab = () => {
     if (pathname === "/admin") return "dashboard";
@@ -75,7 +104,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <Sidebar
-        activeTab={getActiveTab()}
         onTabChange={handleTabChange}
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}

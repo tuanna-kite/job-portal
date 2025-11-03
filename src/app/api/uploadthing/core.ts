@@ -8,6 +8,11 @@ export const ourFileRouter = {
       return { url: file.url, key: file.key };
     },
   ),
+  avatar: f({ image: { maxFileSize: "3MB" } }).onUploadComplete(
+    async ({ file }) => {
+      return { url: file.url, key: file.key };
+    },
+  ),
   documents: f({
     image: { maxFileSize: "4MB" },
     pdf: { maxFileSize: "1MB" },

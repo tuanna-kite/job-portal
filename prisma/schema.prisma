@@ -211,6 +211,8 @@ model Admin {
   fullName   String          @db.VarChar(255)
   email      String          @unique @db.VarChar(255)
   password   String          @db.VarChar(255)
+  phone      String?         @db.VarChar(20)
+  avatar     String?         @db.VarChar(500)
   role       AdminRole       @default(coordinator)
   createdAt  DateTime        @default(now()) @db.Timestamptz(6)
   repProfile Representative?

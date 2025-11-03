@@ -11,7 +11,18 @@ export class AdminRepository {
   }
 
   findById(id: string) {
-    return this.db.admin.findUnique({ where: { id } });
+    return this.db.admin.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        phone: true,
+        avatar: true,
+        createdAt: true,
+      },
+    });
   }
 
   createAdmin(data: {
@@ -21,5 +32,43 @@ export class AdminRepository {
     role: AdminRole;
   }) {
     return this.db.admin.create({ data });
+  }
+
+  updateProfile(
+    id: string,
+    data: { fullName?: string; phone?: string; avatar?: string },
+  ) {
+    return this.db.admin.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        phone: true,
+        avatar: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  updatePassword(id: string, hashedPassword: string) {
+    return this.db.admin.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+  }
+
+  // For password verification
+  findByIdWithPassword(id: string) {
+    return this.db.admin.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
   }
 }
