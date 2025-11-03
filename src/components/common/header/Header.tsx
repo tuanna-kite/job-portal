@@ -18,6 +18,7 @@ const Header = () => {
 
   const navigationItems = [
     { href: ERouteTable.ROOT, label: "Trang chủ" },
+    { href: ERouteTable.JOB, label: "Việc làm" },
     { href: ERouteTable.ABOUT_US, label: "Giới thiệu" },
     { href: ERouteTable.CONTACT, label: "Liên hệ" },
     { href: ERouteTable.SEARCH_CONTRACT, label: "Tra cứu hồ sơ" },

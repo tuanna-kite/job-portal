@@ -10,4 +10,5 @@ export enum ERouteTable {
   PRIVACY_POLICY = "/privacy",
   TERMS_OF_SERVICE = "/term",
   ERROR = "/error",
+  JOB = "/jobs",
 }
