@@ -9,12 +9,16 @@ import React, { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ERouteTable } from "@/contants/route";
+import { useAdminProfile } from "@/shared/http/hooks/auth";
+import { useAuthStore } from "@/store/auth";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { isAuthenticated, user, email } = useAuthStore();
+  const { data: profile } = useAdminProfile();
 
   const navigationItems = [
     { href: ERouteTable.ROOT, label: "Trang chủ" },
@@ -36,10 +40,7 @@ const Header = () => {
   }, []);
 
   // Chọn logo theo trạng thái scroll
-  const desktopLogoSrc = !scrolled
-    ? "/images/auth/logo-white.png"
-    : "/images/auth/logo-app.png";
-  const mobileLogoSrc = !scrolled
+  const logoSrc = !scrolled
     ? "/images/auth/logo-white.png"
     : "/images/auth/logo-app.png";
 
@@ -61,24 +62,13 @@ const Header = () => {
             className="flex items-center"
             aria-label="job-portal"
           >
-            <div className="hidden md:block">
-              <Image
-                src={desktopLogoSrc}
-                alt="job-portal"
-                width={160}
-                height={32}
-                priority
-              />
-            </div>
-            <div className="block md:hidden">
-              <Image
-                src={mobileLogoSrc}
-                alt="job-portal"
-                width={160}
-                height={32}
-                priority
-              />
-            </div>
+            <Image
+              src={logoSrc}
+              alt="job-portal"
+              width={160}
+              height={32}
+              priority
+            />
           </Link>
 
           <nav className="hidden items-center space-x-8 md:flex">
@@ -103,20 +93,54 @@ const Header = () => {
               </Link>
             ))}
           </nav>
-          <div className="hidden flex-col justify-center gap-4 md:flex md:flex-row">
-            <Button
-              variant="default"
-              className={`${scrolled ? "text-primary border-gray-900/25" : "border-white"} mx-auto w-fit rounded-lg border bg-transparent px-6 py-3 md:mx-0`}
-              onClick={() => router.push(ERouteTable.SIGIN_IN)}
-            >
-              Đăng nhập
-            </Button>
-            <Button
-              className="bg-primary-main mx-auto w-fit rounded-lg px-6 py-3 md:mx-0"
-              onClick={() => router.push(ERouteTable.CONNECT)}
-            >
-              Nhận hỗ trợ
-            </Button>
+          <div className="hidden flex-col justify-center gap-4 md:flex md:flex-row md:items-center">
+            {isAuthenticated ? (
+              <>
+                <div
+                  onClick={() => router.push("/admin")}
+                  className="relative h-10 w-10 cursor-pointer overflow-hidden rounded-full bg-gradient-to-br from-blue-400 to-purple-500 shadow-md transition-transform hover:scale-105"
+                >
+                  {profile?.avatar ? (
+                    <Image
+                      src={profile.avatar}
+                      alt="Avatar"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-white">
+                      {(profile?.email?.[0] ||
+                        user?.email?.[0] ||
+                        email?.[0] ||
+                        "A"
+                      ).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  className="bg-primary-main mx-auto w-fit rounded-lg px-6 py-3 md:mx-0"
+                  onClick={() => router.push(ERouteTable.CONNECT)}
+                >
+                  Nhận hỗ trợ
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="default"
+                  className={`${scrolled ? "text-primary border-gray-900/25" : "border-white"} mx-auto w-fit rounded-lg border bg-transparent px-6 py-3 md:mx-0`}
+                  onClick={() => router.push(ERouteTable.SIGIN_IN)}
+                >
+                  Đăng nhập
+                </Button>
+                <Button
+                  className="bg-primary-main mx-auto w-fit rounded-lg px-6 py-3 md:mx-0"
+                  onClick={() => router.push(ERouteTable.CONNECT)}
+                >
+                  Nhận hỗ trợ
+                </Button>
+              </>
+            )}
           </div>
 
           <div className="md:hidden">
@@ -180,19 +204,61 @@ const Header = () => {
           ))}
         </nav>
         <div className="mt-4 px-4">
-          <Button
-            variant="default"
-            className="text-primary mx-auto w-full rounded-lg border border-gray-900/25 bg-transparent px-6 py-3 md:mx-0"
-            onClick={() => router.push(ERouteTable.SIGIN_IN)}
-          >
-            Đăng nhập
-          </Button>
-          <Button
-            className="bg-primary-main mx-auto mt-2 w-full rounded-lg px-6 py-3 md:mx-0"
-            onClick={() => router.push(ERouteTable.CONNECT)}
-          >
-            Nhận hỗ trợ
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <div
+                onClick={() => {
+                  router.push("/admin");
+                  setIsMenuOpen(false);
+                }}
+                className="flex cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:bg-gray-50"
+              >
+                <div className="relative h-10 w-10 overflow-hidden rounded-full bg-gradient-to-br from-blue-400 to-purple-500">
+                  {profile?.avatar ? (
+                    <Image
+                      src={profile.avatar}
+                      alt="Avatar"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-white">
+                      {(profile?.email?.[0] ||
+                        user?.email?.[0] ||
+                        email?.[0] ||
+                        "A"
+                      ).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <span className="text-sm font-medium text-[#212B36]">
+                  Vào trang quản trị
+                </span>
+              </div>
+              <Button
+                className="bg-primary-main mx-auto mt-2 w-full rounded-lg px-6 py-3 md:mx-0"
+                onClick={() => router.push(ERouteTable.CONNECT)}
+              >
+                Nhận hỗ trợ
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="default"
+                className="text-primary mx-auto w-full rounded-lg border border-gray-900/25 bg-transparent px-6 py-3 md:mx-0"
+                onClick={() => router.push(ERouteTable.SIGIN_IN)}
+              >
+                Đăng nhập
+              </Button>
+              <Button
+                className="bg-primary-main mx-auto mt-2 w-full rounded-lg px-6 py-3 md:mx-0"
+                onClick={() => router.push(ERouteTable.CONNECT)}
+              >
+                Nhận hỗ trợ
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
