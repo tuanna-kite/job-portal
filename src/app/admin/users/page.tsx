@@ -1,11 +1,20 @@
 "use client";
 
-import { MoreHorizontal, Printer, Upload, Download, Plus } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,10 +30,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useUsers } from "@/shared/http/hooks/users";
+import {
+  useDeleteUser,
+  useUnarchiveUser,
+  useUpdateUser,
+  useUserStatusCounts,
+  useUsers,
+} from "@/shared/http/hooks/users";
 
 type UserRow = {
   id: string;
+  userId: string;
   name: string;
   email: string;
   phone: string;
@@ -37,21 +53,47 @@ export default function UserAdminPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined,
+  );
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [userToUnarchive, setUserToUnarchive] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const { data, isLoading } = useUsers({
     page,
     limit,
     search: debouncedSearch || undefined,
+    status: statusFilter,
+    role: roleFilter !== "all" ? roleFilter : undefined,
   });
+
+  const { data: statusCountsData } = useUserStatusCounts();
+  const updateUserMutation = useUpdateUser();
+  const deleteUserMutation = useDeleteUser();
+  const unarchiveUserMutation = useUnarchiveUser();
+
+  // Tính số lượng theo status từ API
+  const statusCounts = useMemo(() => {
+    return {
+      all: statusCountsData?.all ?? 0,
+      active: statusCountsData?.active ?? 0,
+      banned: statusCountsData?.banned ?? 0,
+    };
+  }, [statusCountsData]);
+
   const rows = useMemo<UserRow[]>(() => {
     return (data?.items || []).map((u) => ({
-      id: u.id ? `#${u.id.slice(0, 4)}` : "--",
+      id: u.id ? `#${u.id.slice(0, 8)}` : "--",
+      userId: u.id,
       name: u.fullName,
       email: (u as any)?.email || "",
       phone: u.phone,
-      role: (u as any)?.role || "Người dùng",
-      region: (u as any)?.region?.name || "",
+      role: u.repId ? "Đại diện" : "Người dùng",
+      region: u.region?.name || "",
       status:
         u.status === "archived"
           ? "banned"
@@ -61,23 +103,108 @@ export default function UserAdminPage() {
     }));
   }, [data]);
 
+  const handleStatusFilter = (status: string) => {
+    setStatusFilter(status === "all" ? undefined : status);
+    setPage(1); // Reset về trang đầu
+  };
+
+  const handleRoleFilter = (role: string) => {
+    setRoleFilter(role);
+    setPage(1); // Reset về trang đầu
+  };
+
+  const handleLimitChange = (value: string) => {
+    setLimit(Number(value));
+    setPage(1); // Reset về trang đầu
+  };
+
+  const handleDeleteClick = (userId: string) => {
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await deleteUserMutation.mutateAsync(userToDelete);
+      toast.success("Khóa tài khoản thành công");
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (error: any) {
+      toast.error(error?.message || "Khóa tài khoản thất bại");
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleUnarchiveClick = (userId: string) => {
+    setUserToUnarchive(userId);
+    setUnarchiveDialogOpen(true);
+  };
+
+  const handleUnarchiveConfirm = async () => {
+    if (!userToUnarchive) return;
+
+    try {
+      await unarchiveUserMutation.mutateAsync(userToUnarchive);
+      toast.success("Mở khóa tài khoản thành công");
+      setUnarchiveDialogOpen(false);
+      setUserToUnarchive(null);
+    } catch (error: any) {
+      toast.error(error?.message || "Mở khóa tài khoản thất bại");
+    }
+  };
+
+  const handleUnarchiveCancel = () => {
+    setUnarchiveDialogOpen(false);
+    setUserToUnarchive(null);
+  };
+
   return (
     <div className="space-y-4 p-4 md:p-6">
       {/* Tabs summary */}
       <div className="flex items-center gap-3 text-sm">
-        <button className="rounded-full border px-3 py-1 font-medium">
-          Tất cả <span className="ml-2 rounded-full bg-gray-100 px-2">80</span>
-        </button>
-        <button className="rounded-full border px-3 py-1 font-medium">
-          Hoạt động{" "}
-          <span className="ml-2 rounded-full bg-emerald-50 px-2 text-emerald-600">
-            18
+        <button
+          onClick={() => handleStatusFilter("all")}
+          className={`rounded-full border px-3 py-1 font-medium transition-colors ${
+            statusFilter === undefined
+              ? "border-primary-main bg-primary-main/10 text-primary-main"
+              : "hover:bg-gray-50"
+          }`}
+        >
+          Tất cả{" "}
+          <span className="ml-2 rounded-full bg-gray-100 px-2">
+            {statusCounts.all}
           </span>
         </button>
-        <button className="rounded-full border px-3 py-1 font-medium">
+        <button
+          onClick={() => handleStatusFilter("active")}
+          className={`rounded-full border px-3 py-1 font-medium transition-colors ${
+            statusFilter === "active"
+              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+              : "hover:bg-gray-50"
+          }`}
+        >
+          Hoạt động{" "}
+          <span className="ml-2 rounded-full bg-emerald-50 px-2 text-emerald-600">
+            {statusCounts.active}
+          </span>
+        </button>
+        <button
+          onClick={() => handleStatusFilter("archived")}
+          className={`rounded-full border px-3 py-1 font-medium transition-colors ${
+            statusFilter === "archived"
+              ? "border-rose-500 bg-rose-50 text-rose-700"
+              : "hover:bg-gray-50"
+          }`}
+        >
           Bị cấm{" "}
           <span className="ml-2 rounded-full bg-rose-50 px-2 text-rose-600">
-            11
+            {statusCounts.banned}
           </span>
         </button>
         <div className="ml-auto">
@@ -92,7 +219,7 @@ export default function UserAdminPage() {
       {/* Filters */}
       <div className="rounded-xl border bg-white p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <Select>
+          <Select value={roleFilter} onValueChange={handleRoleFilter}>
             <SelectTrigger className="h-10 w-full md:w-56">
               <SelectValue placeholder="Vai trò" />
             </SelectTrigger>
@@ -106,35 +233,13 @@ export default function UserAdminPage() {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Tìm kiếm..."
+                placeholder="Tìm kiếm theo tên, điện thoại..."
                 className="h-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-10 w-10">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem>
-                    <Printer className="mr-2 h-4 w-4" /> In
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Upload className="mr-2 h-4 w-4" /> Nhập
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Download className="mr-2 h-4 w-4" /> Xuất
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
-
-          <Button variant="destructive" size="sm" className="md:ml-2">
-            Xóa
-          </Button>
         </div>
 
         {/* Results summary chips */}
@@ -143,10 +248,25 @@ export default function UserAdminPage() {
             ? "Đang tải..."
             : `${data?.pagination?.totalItems ?? 0} kết quả được tìm thấy`}
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-          <div>Vai trò: Đại diện khu vực</div>
-          <div>Từ khóa: Keyword</div>
-        </div>
+        {(roleFilter !== "all" || debouncedSearch) && (
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            {roleFilter !== "all" && (
+              <div className="rounded-full bg-gray-100 px-2 py-1">
+                Vai trò:{" "}
+                {roleFilter === "rep"
+                  ? "Đại diện"
+                  : roleFilter === "partner"
+                    ? "Đối tác"
+                    : roleFilter}
+              </div>
+            )}
+            {debouncedSearch && (
+              <div className="rounded-full bg-gray-100 px-2 py-1">
+                Từ khóa: {debouncedSearch}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Table */}
         <div className="mt-4 overflow-x-auto">
@@ -166,48 +286,93 @@ export default function UserAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((u, idx) => (
-                <tr key={idx} className="border-b last:border-0">
-                  <td className="py-3 pl-3 align-middle">
-                    <Checkbox />
-                  </td>
-                  <td className="py-3 align-middle text-gray-700">{u.id}</td>
-                  <td className="py-3 align-middle">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200" />
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {u.name}
-                        </div>
-                        <div className="text-xs text-gray-500">{u.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 align-middle text-gray-700">{u.phone}</td>
-                  <td className="py-3 align-middle text-gray-700">{u.role}</td>
-                  <td className="py-3 align-middle text-gray-700">
-                    {u.region}
-                  </td>
-                  <td className="py-3 align-middle">
-                    <TableRowStatusCell status={u.status} />
-                  </td>
-                  <td className="py-3 pr-3 text-right align-middle">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
-                        <DropdownMenuItem className="text-rose-600">
-                          Xóa bỏ
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {rows.length === 0 && !isLoading ? (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-gray-500">
+                    Không có dữ liệu
                   </td>
                 </tr>
-              ))}
+              ) : (
+                rows.map((u) => (
+                  <tr key={u.userId} className="border-b last:border-0">
+                    <td className="py-3 pl-3 align-middle">
+                      <Checkbox />
+                    </td>
+                    <td className="py-3 align-middle text-gray-700">{u.id}</td>
+                    <td className="py-3 align-middle">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200" />
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {u.name}
+                          </div>
+                          {u.email && (
+                            <div className="text-xs text-gray-500">
+                              {u.email}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 align-middle text-gray-700">
+                      {u.phone}
+                    </td>
+                    <td className="py-3 align-middle text-gray-700">
+                      {u.role}
+                    </td>
+                    <td className="py-3 align-middle text-gray-700">
+                      {u.region || "--"}
+                    </td>
+                    <td className="py-3 align-middle">
+                      <TableRowStatusCell status={u.status} />
+                    </td>
+                    <td className="py-3 pr-3 text-right align-middle">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem
+                            className="text-rose-600"
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleDeleteClick(u.userId);
+                            }}
+                            disabled={
+                              u.status === "banned" ||
+                              deleteUserMutation.isPending ||
+                              unarchiveUserMutation.isPending
+                            }
+                          >
+                            Khóa
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-emerald-600"
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleUnarchiveClick(u.userId);
+                            }}
+                            disabled={
+                              (u.status !== "banned" &&
+                                u.status !== "pending") ||
+                              unarchiveUserMutation.isPending ||
+                              deleteUserMutation.isPending
+                            }
+                          >
+                            Mở khóa
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -216,7 +381,7 @@ export default function UserAdminPage() {
         <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <span>Số hàng mỗi trang</span>
-            <Select defaultValue="5">
+            <Select value={String(limit)} onValueChange={handleLimitChange}>
               <SelectTrigger className="h-8 w-16">
                 <SelectValue />
               </SelectTrigger>
@@ -254,6 +419,69 @@ export default function UserAdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Xác nhận khóa tài khoản</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn khóa tài khoản người dùng này? Tài khoản sẽ
+              bị chuyển sang trạng thái "Bị cấm" và có thể mở khóa lại sau.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleDeleteCancel}
+              disabled={deleteUserMutation.isPending}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleteUserMutation.isPending}
+              className="bg-rose-600 hover:bg-rose-700"
+            >
+              {deleteUserMutation.isPending ? "Đang khóa..." : "Khóa tài khoản"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unarchive Confirmation Dialog */}
+      <Dialog open={unarchiveDialogOpen} onOpenChange={setUnarchiveDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Xác nhận mở khóa tài khoản</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn mở khóa tài khoản người dùng này? Tài khoản
+              sẽ được chuyển sang trạng thái "Hoạt động".
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleUnarchiveCancel}
+              disabled={unarchiveUserMutation.isPending}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              onClick={handleUnarchiveConfirm}
+              disabled={unarchiveUserMutation.isPending}
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              {unarchiveUserMutation.isPending ? "Đang mở khóa..." : "Mở khóa"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

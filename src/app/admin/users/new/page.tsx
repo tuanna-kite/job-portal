@@ -1,6 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -25,6 +27,7 @@ import {
 import { useCreatePartner } from "@/shared/http/hooks/partners";
 import { useRegions } from "@/shared/http/hooks/regions";
 import { useCreateRep } from "@/shared/http/hooks/reps";
+import { qk } from "@/shared/http/query-keys";
 
 const schema = z
   .object({
@@ -46,6 +49,8 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export default function CreateUserPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -76,7 +81,10 @@ export default function CreateUserPage() {
           notes: undefined,
         });
         toast.success("Tạo đại diện thành công");
+        // Invalidate users query để refresh danh sách
+        queryClient.invalidateQueries({ queryKey: qk.users(undefined) });
         form.reset();
+        router.push("/admin/users");
         return;
       }
 
@@ -89,7 +97,10 @@ export default function CreateUserPage() {
           notes: undefined,
         });
         toast.success("Tạo đối tác thành công");
+        // Invalidate users query để refresh danh sách
+        queryClient.invalidateQueries({ queryKey: qk.users(undefined) });
         form.reset();
+        router.push("/admin/users");
         return;
       }
 
