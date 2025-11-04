@@ -23,6 +23,7 @@ export class UsersController {
           undefined,
           error.code === "NOT_FOUND" ? 404 : 400,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;
@@ -42,6 +43,7 @@ export class UsersController {
           undefined,
           404,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;
@@ -61,6 +63,7 @@ export class UsersController {
           undefined,
           404,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;
@@ -93,6 +96,7 @@ export class UsersController {
           undefined,
           400,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;
@@ -105,6 +109,7 @@ export class UsersController {
       return ctx.json(ResponseBuilder.ok(counts));
     } catch (error: any) {
       const exception = HttpExceptionBuilder.internal();
+      // @ts-ignore
       return ctx.json(exception, exception.statusCode);
     }
   };
@@ -123,6 +128,7 @@ export class UsersController {
           undefined,
           error.code === "NOT_FOUND" ? 404 : 400,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;
@@ -133,7 +139,9 @@ export class UsersController {
     try {
       const id = ctx.req.param("id") as string;
       await this.service.delete(id);
-      return ctx.json(ResponseBuilder.ok({ message: "User archived successfully" }));
+      return ctx.json(
+        ResponseBuilder.ok({ message: "User archived successfully" }),
+      );
     } catch (error: any) {
       if (error.name === "AppError") {
         const exception = HttpExceptionBuilder.error(
@@ -142,6 +150,7 @@ export class UsersController {
           undefined,
           404,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;
@@ -152,7 +161,9 @@ export class UsersController {
     try {
       const id = ctx.req.param("id") as string;
       await this.service.unarchive(id);
-      return ctx.json(ResponseBuilder.ok({ message: "User unarchived successfully" }));
+      return ctx.json(
+        ResponseBuilder.ok({ message: "User unarchived successfully" }),
+      );
     } catch (error: any) {
       if (error.name === "AppError") {
         const exception = HttpExceptionBuilder.error(
@@ -161,6 +172,7 @@ export class UsersController {
           undefined,
           error.code === "NOT_FOUND" ? 404 : 400,
         );
+        // @ts-ignore
         return ctx.json(exception, exception.statusCode);
       }
       throw error;

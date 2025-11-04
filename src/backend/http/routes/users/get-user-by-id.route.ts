@@ -22,6 +22,7 @@ const getUserByIdRoute = createRoute({
         },
       },
     },
+    404: { description: "User not found" },
   },
 });
 

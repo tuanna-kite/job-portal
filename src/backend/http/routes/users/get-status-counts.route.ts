@@ -22,6 +22,7 @@ const getStatusCountsRoute = createRoute({
         },
       },
     },
+    500: { description: "Internal server error" },
   },
 });
 

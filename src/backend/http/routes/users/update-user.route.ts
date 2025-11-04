@@ -12,9 +12,10 @@ const updateUserRoute = createRoute({
       id: z.string().uuid(),
     }),
     body: {
+      required: true,
       content: {
         "application/json": {
-          schema: UpdateUserSchema,
+          schema: UpdateUserSchema as any,
         },
       },
     },
@@ -31,6 +32,8 @@ const updateUserRoute = createRoute({
         },
       },
     },
+    400: { description: "Bad request" },
+    404: { description: "User not found" },
   },
 });
 

@@ -33,6 +33,7 @@ const listUsersRoute = createRoute({
         },
       },
     },
+    400: { description: "Bad request" },
   },
 });
 

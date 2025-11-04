@@ -24,6 +24,8 @@ const unarchiveUserRoute = createRoute({
         },
       },
     },
+    400: { description: "Bad request (e.g. user is not archived)" },
+    404: { description: "User not found" },
   },
 });
 

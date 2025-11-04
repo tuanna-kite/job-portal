@@ -26,7 +26,7 @@ export class UsersService {
 
   async createUser(dto: CreateUserDto) {
     // TODO: Implement create user
-    throw new AppError("NOT_IMPLEMENTED", "Create user not implemented");
+    throw new AppError("INTERNAL_ERROR", "Create user not implemented");
   }
 
   async findAll() {

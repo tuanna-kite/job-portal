@@ -24,6 +24,7 @@ const deleteUserRoute = createRoute({
         },
       },
     },
+    404: { description: "User not found" },
   },
 });
 
