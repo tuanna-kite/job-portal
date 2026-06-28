@@ -55,6 +55,15 @@ html {
   }
 }
 
+@keyframes reviewScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* Animation classes */
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out forwards;
@@ -74,6 +83,10 @@ html {
 .animate-fade-in-scale {
   animation: fadeInScale 0.8s ease-out forwards;
   opacity: 0;
+}
+
+.animate-review-scroll {
+  animation: reviewScroll 90s linear infinite;
 }
 
 /* Staggered animation delays */
